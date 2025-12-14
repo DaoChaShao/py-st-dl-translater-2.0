@@ -5,6 +5,13 @@
 
 ### Features
 
+- add prediction.py for machine translation prediction and evaluation ([38f0863](https://github.com///commit/38f0863788b34be2c1af6a4f9350c96fed4fae33))
+- add layout.py for configuring page and sidebar navigation ([4919b82](https://github.com///commit/4919b821793bfebe67544bc3b5f33d533b49d040))
+- add home.py for interactive machine translation evaluation system ([b6c258e](https://github.com///commit/b6c258ecf299641d9c529194168f420648efafd5))
+- add __init__.py for Next Word Prediction application package ([0849bb5](https://github.com///commit/0849bb58a3bbd62f4ea8186449818a04fee43c86))
+- add __init__.py for package initialization ([553a712](https://github.com///commit/553a712cf79203e16f01ebc9119fdad0a7c548fe))
+- add __init__.py for multi-page structure in Next Word Prediction app ([f081c10](https://github.com///commit/f081c105d0361de8b4903116341093de28c67de7))
+- add .gitignore to exclude Python and IDE-specific files ([aa09dd7](https://github.com///commit/aa09dd7f0cf6f4d7d013676ec1c13c33eca7a538))
 - add sqlite3.db ([6584d9a](https://github.com///commit/6584d9a5cf0d8cc4c380156928d324f8b8b94507))
 - add English dictionary file dictionary_en.json ([d10a6ab](https://github.com///commit/d10a6abda6fc099cdeaa6a13d0992cdd87188e95))
 - add dictionary_cn.json ([d7ddb51](https://github.com///commit/d7ddb516db8f689bc504fe14956eeccfcd3ec716))
@@ -63,7 +70,6 @@
 - add __init__.py for Dataloader module with PyTorch DataLoader wrappers ([94a7f08](https://github.com///commit/94a7f0852679fd49f38084814f48f5a022de624f))
 - add __init__.py for Criterion module with specialized PyTorch loss functions ([01a94e4](https://github.com///commit/01a94e4f54c7921cff4427ece2411b8deeaee6ac))
 - add __init__.py for ML/Data Processing configuration modules ([10917cd](https://github.com///commit/10917cd4007a73cb2cf768b8320e40f698c8dab7))
-- add .gitignore to exclude Python and IDE-specific files ([5738a6a](https://github.com///commit/5738a6a7d4258bd3f4c4429717f2d61dfa9af08d))
 - update CHANGELOG.md with recent feature additions and updates ([9fbc087](https://github.com///commit/9fbc087f4dc1d8bdc7c2faaa2651311f7a526b92))
 - add configuration files for English and Chinese NLP pipelines ([96e6ad8](https://github.com///commit/96e6ad8273ffde8a22f3c39a4f57dfa95db2aaf9))
 - add CHANGELOG.md for version 0.1.0 with features and bug fixes ([b141998](https://github.com///commit/b1419983a576e87704fafe326775e4a8eff60473))
@@ -80,4 +86,8 @@
 ### Bug Fixes
 
 - Ensure main function is called and add newline at end of file ([cf61734](https://github.com///commit/cf617349cdb706be41ac3d6d2166ba09fe95ebee))
+
+### Docs
+
+- update CHANGELOG.md with recent feature additions ([cca6be8](https://github.com///commit/cca6be843a25bde0e3c58e3274114eb06be54ae9))
 

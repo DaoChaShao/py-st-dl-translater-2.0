@@ -5,6 +5,11 @@
 
 ### Features
 
+- add sqlite3.db ([6584d9a](https://github.com///commit/6584d9a5cf0d8cc4c380156928d324f8b8b94507))
+- add English dictionary file dictionary_en.json ([d10a6ab](https://github.com///commit/d10a6abda6fc099cdeaa6a13d0992cdd87188e95))
+- add dictionary_cn.json ([d7ddb51](https://github.com///commit/d7ddb516db8f689bc504fe14956eeccfcd3ec716))
+- add cmn.txt for multilingual support configuration ([25e41c1](https://github.com///commit/25e41c1970e5d38694072bf6039f06607e8cc766))
+- add .gitignore to exclude Python-generated files and IDE-specific directories ([4775e83](https://github.com///commit/4775e8338c8bdc6f1cb119d166b2f6fb13e2cec4))
 - add unet_focal.py module for Focal Loss implementation ([f2bfc1f](https://github.com///commit/f2bfc1f5078918e1e0b99afcff2c8c0a190f959c))
 - add unet_edge.py module for edge-aware loss function ([dba1be8](https://github.com///commit/dba1be866c32a58393e89a94f531ddfbe9c711a6))
 - add unet_dnf.py module for combined Dice, BCE, and Focal loss ([4cabf1e](https://github.com///commit/4cabf1ef8c49d055ca32399ac0a3d27940feec18))

@@ -5,6 +5,8 @@
 
 ### Features
 
+- add configuration files for English and Chinese NLP pipelines ([96e6ad8](https://github.com///commit/96e6ad8273ffde8a22f3c39a4f57dfa95db2aaf9))
+- add CHANGELOG.md for version 0.1.0 with features and bug fixes ([b141998](https://github.com///commit/b1419983a576e87704fafe326775e4a8eff60473))
 - update dependencies and add development tools configuration ([180b2d9](https://github.com///commit/180b2d9cc67f8161411c9b50bc68cb8009e56614))
 - add uv.lock ([c0136da](https://github.com///commit/c0136dacf04d0ea41a2515c052b4a9510f00223b))
 - Add dependency lock file for package management ([fdaccc6](https://github.com///commit/fdaccc601562fff34c728e9bf1b6e4d5b4b7f68e))

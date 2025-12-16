@@ -12,7 +12,7 @@ from random import randint, choice
 from torch import Tensor, load, device, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Lang, Tokens, Seq2SeqNet, Seq2SeqStrategies
+from src.configs.cfg_types import Langs, Tokens, Seq2SeqNets, Seq2SeqStrategies
 from src.nets.seq2seq import SeqToSeqCoder
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines, red, green, blue
@@ -55,14 +55,14 @@ def main() -> None:
         en4prove: list[str] = [e for e, _ in data]
         assert len(cn4prove) == len(en4prove), "Chinese and English data length mismatch."
         if amount is None:
-            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                 cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4prove)
-            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                 en_items: list[list[str]] = tokeniser.batch_tokenise(en4prove)
         else:
-            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                 cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4prove[:amount])
-            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                 en_items: list[list[str]] = tokeniser.batch_tokenise(en4prove[:amount])
         # print(cn_items[:3])
         # print(en_items[:3])
@@ -108,7 +108,7 @@ def main() -> None:
                 bid=True,
                 pad_idx4input=dictionary_cn[Tokens.PAD],
                 pad_idx4output=dictionary_en[Tokens.PAD],
-                net_category=Seq2SeqNet.GRU,
+                net_category=Seq2SeqNets.GRU,
                 SOS=dictionary_cn[Tokens.SOS],
                 EOS=dictionary_en[Tokens.EOS],
             )

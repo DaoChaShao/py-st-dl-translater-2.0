@@ -5,6 +5,8 @@
 
 ### Features
 
+- rename Attention class to SingleHeadAttention in attention_single.py ([4ba3082](https://github.com///commit/4ba308215e3066dd7907de1040d52d0e939e84e7))
+- add MultiHeadAttention and SingleHeadAttention to module exports ([8972f55](https://github.com///commit/8972f55081f2e8f544366f3d00c720a07fd74e22))
 - add data processing functionality in processor.py ([eb77f97](https://github.com///commit/eb77f971fad3d7affed0f59ea1c8b1a4ee67d77f))
 - add data preprocessing functionality in preprocessor.py ([79771a6](https://github.com///commit/79771a61965f246bc57ee9e94bf2ac3f33f15b8f))
 - add data preparation module in prepper.py ([303fc77](https://github.com///commit/303fc77d5780ffb8ff389d9ff2164e0641e7d96e))
@@ -118,7 +120,7 @@
 
 ### Docs
 
-- update CHANGELOG.md with recent feature additions and bug fixes ([aacb87e](https://github.com///commit/aacb87e6b4eb1b2ba65d8163a5e9065126454bc8))
+- update CHANGELOG.md with recent feature additions and bug fixes ([505c6f3](https://github.com///commit/505c6f306c04a0e5419d623218047e52e34af6c3))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring

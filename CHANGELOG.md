@@ -5,6 +5,16 @@
 
 ### Features
 
+- rename vocab_size4output to vocab_size_tgt for clarity in trainer4seq2seq.py ([1578e58](https://github.com///commit/1578e580fb8ab0d1aaab28297fffe1e6cea0fec2))
+- update trainer to use SeqToSeqTaskGRU model and support CONCATENATE merge method ([be22fb7](https://github.com///commit/be22fb751b5e0564f7fbd6d6a9f109897e2a4db9))
+- update merge_method type to support SeqMergeMethods in seq2seq_task_rnn.py ([bbe6a56](https://github.com///commit/bbe6a56269ba130de56523b0af65b67eec963c14))
+- update merge_method type to support SeqMergeMethods in seq2seq_task_lstm.py ([db591b1](https://github.com///commit/db591b1c7dbbf9da7b75a54ba19b41721ba907f2))
+- update merge_method type to support SeqMergeMethods in seq2seq_task_gru.py ([4ef7c64](https://github.com///commit/4ef7c6452bcef72faa9a03e79a43f03cebb0c521))
+- add AttentionRNNForSeqToSeq model for sequence-to-sequence tasks with attention mechanism ([c890ff0](https://github.com///commit/c890ff0127d8d39991474984523a80f76d34c5ea))
+- implement SeqToSeqTaskLSTM model for sequence-to-sequence tasks with attention mechanism ([cdc6541](https://github.com///commit/cdc6541472bb324b4c1b10379372a3677c96aab5))
+- add AttentionGRUForSeqToSeq model for sequence-to-sequence tasks ([9bbca80](https://github.com///commit/9bbca804a02bcb1307e8e3a5492cf325bf83cfed))
+- add SeqMergeMethods enumeration for sequence merging strategies ([da6b528](https://github.com///commit/da6b5287d5ccee0258af1031ffc45e7ff4654782))
+- rename Seq2SeqStrategies to SeqMergeMethods in module exports ([aa14ef8](https://github.com///commit/aa14ef85b9d067509b63fc152aa4a0df91b8d21b))
 - rename Attention class to SingleHeadAttention in attention_single.py ([4ba3082](https://github.com///commit/4ba308215e3066dd7907de1040d52d0e939e84e7))
 - add MultiHeadAttention and SingleHeadAttention to module exports ([8972f55](https://github.com///commit/8972f55081f2e8f544366f3d00c720a07fd74e22))
 - add data processing functionality in processor.py ([eb77f97](https://github.com///commit/eb77f971fad3d7affed0f59ea1c8b1a4ee67d77f))
@@ -120,10 +130,15 @@
 
 ### Docs
 
+- update CHANGELOG.md with recent renaming and feature additions ([5ae6891](https://github.com///commit/5ae6891cbe9c8a4e44c2bfd86953ec1583de3167))
 - update CHANGELOG.md with recent feature additions and bug fixes ([505c6f3](https://github.com///commit/505c6f306c04a0e5419d623218047e52e34af6c3))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring
 
+- update Lang to Langs in processor.py for consistency ([fab03db](https://github.com///commit/fab03db045454a1def4c27d017ec4b4aeae019f5))
+- simplify constructor call in multi_task_rnn.py ([d4815a2](https://github.com///commit/d4815a29cec310b7e477fe7926cf17e5d7523633))
+- simplify constructor call in multi_task_lstm.py ([b694cc6](https://github.com///commit/b694cc6261e6a0d10cd4d5b19297600253937d88))
+- simplify constructor call in multi_task_gru.py ([e8b041a](https://github.com///commit/e8b041a959cdafac4d3be3533859cbdf7089786d))
 - rename enumeration classes for clarity and consistency ([3967a6e](https://github.com///commit/3967a6e169ab60e41333f867a2ce99023c019214))
 

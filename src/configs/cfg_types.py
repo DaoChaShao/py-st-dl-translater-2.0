@@ -27,6 +27,12 @@ class Langs(StrEnum):
 
 
 @unique
+class SeqMergeMethods(StrEnum):
+    AVERAGE = "average"
+    CONCATENATE = "concat"
+
+
+@unique
 class Seq2SeqNets(StrEnum):
     RNN = "rnn"
     LSTM = "lstm"

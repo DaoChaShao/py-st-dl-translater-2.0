@@ -24,7 +24,7 @@ class TorchTrainer4SeqToSeq(QObject):
     losses: Signal = Signal(int, float, float)
 
     def __init__(self,
-                 vocab_size4output: int,
+                 vocab_size_tgt: int,
                  model: nn.Module, optimiser, criterion, scheduler=None,
                  PAD: int = 0, SOS: int = 2, EOS: int = 3,
                  decode_strategy: str = "greedy", beam_width: int = 5,
@@ -32,7 +32,7 @@ class TorchTrainer4SeqToSeq(QObject):
                  ) -> None:
         super().__init__()
         """ Initialise the TorchTrainer4SeqToSeq class
-        :param vocab_size4output: size of the output vocabulary
+        :param vocab_size_tgt: size of the targert vocabulary
         :param model: the seq2seq model to be trained
         :param optimiser: the optimiser for training
         :param criterion: the loss function
@@ -44,7 +44,7 @@ class TorchTrainer4SeqToSeq(QObject):
         :param beam_width: beam width for beam search decoding
         :param accelerator: device to use for training ("cpu", "cuda", "auto", etc.)
         """
-        self._vocab_size = vocab_size4output
+        self._vocab_size = vocab_size_tgt
         self._PAD = PAD
         self._SOS = SOS
         self._EOS = EOS
@@ -160,6 +160,7 @@ class TorchTrainer4SeqToSeq(QObject):
         :param valid_loader: DataLoader for validation data
         :param epochs: number of training epochs
         :param model_save_path: path to save the best model parameters
+        :param log_name: name for the training log file
         :return: None
         """
         # Initialize logger

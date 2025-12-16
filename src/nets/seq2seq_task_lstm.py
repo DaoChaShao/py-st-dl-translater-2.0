@@ -13,6 +13,7 @@ from torch import (Tensor, nn,
                    randint)
 from typing import override
 
+from src.configs.cfg_types import SeqMergeMethods
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
@@ -27,7 +28,7 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
                  accelerator: str = "cpu",
                  PAD_SRC: int = 0, PAD_TGT: int = 0, SOS: int = 2, EOS: int = 3,
                  *,
-                 merge_method: str = "average",
+                 merge_method: str | SeqMergeMethods = "average",
                  ) -> None:
         super().__init__(
             vocab_size_src=vocab_size_src,

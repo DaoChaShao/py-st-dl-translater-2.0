@@ -15,10 +15,13 @@ for various machine learning tasks including segmentation, classification,
 and sequence modeling.
 
 Main Categories:
++ BaseRNN: Base class for Recurrent Neural Networks
++ BaseSeqNet: Base class for Sequence Networks
++ MultiTask Models: Multi-task learning architectures (RNN, LSTM, GRU)
++ Seq2Seq Models: Encoder-decoder architectures for sequence-to-sequence tasks
++ SeqEncoder/SeqDecoder: Individual encoder and decoder components
 + Standard4LayersUNetClassification: 4-layer UNet variant for semantic segmentation
 + Standard5LayersUNetForClassification: 5-layer UNet variant for semantic segmentation
-+ LSTMRNNForClassification: Recurrent Neural Network for sequence classification tasks
-+ NormalRNNForClassification: Standard RNN for sequence classification tasks
 
 Usage:
 + Direct import of models via:
@@ -28,20 +31,34 @@ Usage:
 """
 
 __author__ = "Shawn Yu"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
-from .gru4classification import GRUClassifier
+from .base_rnn import BaseRNN
+from .base_seq import BaseSeqNet
+from .multi_task_gru import MultiTaskGRU
+from .multi_task_lstm import MultiTaskLSTM
+from .multi_task_rnn import MultiTaskRNN
 from .seq2seq import SeqToSeqCoder
-from .lstm4classification import LSTMClassifier
-from .rnn4classification import RNNClassifier
+from .seq2seq_task_gru import SeqToSeqTaskGRU
+from .seq2seq_task_lstm import SeqToSeqTaskLSTM
+from .seq2seq_task_rnn import SeqToSeqTaskRNN
+from .seq_encoder import SeqEncoder
+from .seq_decoder import SeqDecoder
 from .unet4layers4sem import Standard4LayersUNetClassification
 from .unet5layers4sem import Standard5LayersUNetForClassification
 
 __all__ = [
-    "GRUClassifier",
+    "BaseRNN",
+    "BaseSeqNet",
+    "MultiTaskGRU",
+    "MultiTaskLSTM",
+    "MultiTaskRNN",
     "SeqToSeqCoder",
-    "LSTMClassifier",
-    "RNNClassifier",
+    "SeqToSeqTaskGRU",
+    "SeqToSeqTaskLSTM",
+    "SeqToSeqTaskRNN",
+    "SeqEncoder",
+    "SeqDecoder",
     "Standard4LayersUNetClassification",
     "Standard5LayersUNetForClassification",
 ]

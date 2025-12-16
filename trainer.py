@@ -10,7 +10,7 @@ from pathlib import Path
 from torch import optim, nn
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Tokens, Seq2SeqNet, Seq2SeqStrategies
+from src.configs.cfg_types import Tokens, Seq2SeqNets, Seq2SeqStrategies
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
 from src.nets.seq2seq import SeqToSeqCoder
@@ -53,7 +53,7 @@ def main() -> None:
             bid=True,
             pad_idx4input=dictionary_cn[Tokens.PAD],
             pad_idx4output=dictionary_en[Tokens.PAD],
-            net_category=Seq2SeqNet.GRU,
+            net_category=Seq2SeqNets.GRU,
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -96,7 +96,7 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{Seq2SeqNet.GRU}-{Seq2SeqStrategies.GREEDY}"
+            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.GREEDY}"
         )
 
 

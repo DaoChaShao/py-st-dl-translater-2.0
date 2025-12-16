@@ -11,7 +11,7 @@ from torch import Tensor, nn, tanh, softmax, bmm, cat
 from src.configs.cfg_types import Attentions
 
 
-class Attention(nn.Module):
+class SingleHeadAttention(nn.Module):
     """ Base attention mechanism for sequence models """
 
     def __init__(self, hidden_size: int, method: Attentions = "dot") -> None:

@@ -10,10 +10,10 @@ from pathlib import Path
 from torch import optim, nn
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Tokens, Seq2SeqNets, Seq2SeqStrategies
+from src.configs.cfg_types import Tokens, Seq2SeqNets, Seq2SeqStrategies, SeqMergeMethods
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
-from src.nets.seq2seq import SeqToSeqCoder
+from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
 
@@ -43,17 +43,20 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        model = SeqToSeqCoder(
-            vocab_size4input=vocab_size4cn,
-            vocab_size4output=vocab_size4en,
+        model = SeqToSeqTaskGRU(
+            vocab_size_src=vocab_size4cn,
+            vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
             hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
             num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
             dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-            bid=True,
-            pad_idx4input=dictionary_cn[Tokens.PAD],
-            pad_idx4output=dictionary_en[Tokens.PAD],
-            net_category=Seq2SeqNets.GRU,
+            bidirectional=True,
+            accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
+            PAD_SRC=dictionary_cn[Tokens.PAD],
+            PAD_TGT=dictionary_en[Tokens.PAD],
+            SOS=dictionary_cn[Tokens.SOS],
+            EOS=dictionary_cn[Tokens.EOS],
+            merge_method=SeqMergeMethods.CONCATENATE,
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -62,23 +65,30 @@ def main() -> None:
         model.summary()
         """
         ****************************************************************
-        Model: SeqToSeqCoder
+        Model Summary for SeqToSeqTaskGRU
         ----------------------------------------------------------------
-        Encoder Vocab Size: 5235
-        Decoder Vocab Size: 3189
-        Embedding Dim: 128
-        Hidden Size: 256
-        Num Layers: 2
-        Bidirectional Encoder: True
-        RNN Type: gru
-        Total Parameters: 4,364,661
-        Trainable Parameters: 4,364,661
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          True
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         4,364,661
+        Trainable parameters:     4,364,661
+        Non-trainable parameters: 0
         ****************************************************************
         """
 
         # Setup trainer
         trainer = TorchTrainer4SeqToSeq(
-            vocab_size4output=vocab_size4en,
+            vocab_size_tgt=vocab_size4en,
             model=model,
             optimiser=optimizer,
             criterion=criterion,
@@ -86,7 +96,7 @@ def main() -> None:
             PAD=dictionary_en[Tokens.PAD],
             SOS=dictionary_en[Tokens.SOS],
             EOS=dictionary_en[Tokens.EOS],
-            decode_strategy=Seq2SeqStrategies.GREEDY,
+            decode_strategy=Seq2SeqStrategies.BEAM_SEARCH,
             beam_width=CONFIG4RNN.PARAMETERS.BEAM_SIZE,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
         )
@@ -96,7 +106,7 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.GREEDY}"
+            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCATENATE}",
         )
 
 

@@ -14,20 +14,20 @@ from src.utils.stats import load_json
 
 
 @unique
-class Lang(StrEnum):
+class Langs(StrEnum):
     CN = "cn"
     EN = "en"
 
 
 @unique
-class SeqTask(StrEnum):
+class TSSeqSeparate(StrEnum):
     SEQ2ONE = "seq2one"
     SEQ2SEQ = "seq2seq"
     SEQ_SLICE = "slice"
 
 
 @unique
-class Seq2SeqNet(StrEnum):
+class Seq2SeqNets(StrEnum):
     RNN = "rnn"
     LSTM = "lstm"
     GRU = "gru"
@@ -57,7 +57,7 @@ class Tasks(StrEnum):
 
 
 if __name__ == "__main__":
-    out = SeqTask.SEQ2ONE
+    out = TSSeqSeparate.SEQ2ONE
     print(out)
 
     dic: Path = Path(CONFIG.FILEPATHS.DICTIONARY)

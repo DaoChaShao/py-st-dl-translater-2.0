@@ -15,7 +15,7 @@ from streamlit import (empty, sidebar, subheader, session_state,
 from torch import load, device, Tensor, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Lang, Tokens, Seq2SeqNet, Seq2SeqStrategies
+from src.configs.cfg_types import Langs, Tokens, Seq2SeqNets, Seq2SeqStrategies
 from src.nets.seq2seq import SeqToSeqCoder
 from src.utils.helper import Timer
 from src.utils.NLTK import bleu_score
@@ -109,7 +109,7 @@ with sidebar:
             # Set model selection
             model: str = selectbox(
                 "Select a Model",
-                options=[Seq2SeqNet.RNN, Seq2SeqNet.LSTM, Seq2SeqNet.GRU], index=2,
+                options=[Seq2SeqNets.RNN, Seq2SeqNets.LSTM, Seq2SeqNets.GRU], index=2,
                 disabled=True, width="stretch"
             )
             caption(f"You selected **{model}** for translation.")
@@ -134,7 +134,7 @@ with sidebar:
                         bid=True,
                         pad_idx4input=dictionary_cn[Tokens.PAD],
                         pad_idx4output=dictionary_en[Tokens.PAD],
-                        net_category=Seq2SeqNet.GRU,
+                        net_category=Seq2SeqNets.GRU,
                         SOS=dictionary_cn[Tokens.SOS],
                         EOS=dictionary_en[Tokens.EOS],
                     )
@@ -162,20 +162,20 @@ with sidebar:
                         session_state["cn4prove"]: list[str] = [c for _, c in data]
                         en4prove: list[str] = [e for e, _ in data]
                         if amount is None:
-                            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                                 session_state["cn_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     session_state["cn4prove"], streamlit_bar=True
                                 )
-                            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                                 session_state["en_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     en4prove, streamlit_bar=True
                                 )
                         else:
-                            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                                 session_state["cn_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     session_state["cn4prove"][:amount], streamlit_bar=True
                                 )
-                            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                                 session_state["en_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     en4prove[:amount], streamlit_bar=True
                                 )

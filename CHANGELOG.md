@@ -1,10 +1,21 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-15)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-16)
 
 ### Features
 
+- add SeqEncoder class for sequence encoding in RNN architectures ([1cf78c9](https://github.com///commit/1cf78c9a30b0c841cc9cb3871aaed4a0a51652d8))
+- add SeqDecoder class for sequence decoding in RNN architectures ([0c4c9a9](https://github.com///commit/0c4c9a96918083255d3f2cc019bc31984e89f621))
+- add SeqToSeqTaskRNN class for sequence-to-sequence tasks using RNN ([1c38ec2](https://github.com///commit/1c38ec2d10e95714ac72b98ffee4b035b487b259))
+- add SeqToSeqTaskLSTM class for sequence-to-sequence tasks using LSTM ([7bf3eb9](https://github.com///commit/7bf3eb92825731bff4cd25711ca626c0e9da0ff6))
+- add MultiTaskGRU class for multi-task learning with GRU ([ed29428](https://github.com///commit/ed29428d9045cafe22ad669450d5d266022d7c1d))
+- add MultiTaskRNN class for multi-class classification tasks using PyTorch ([65f2a90](https://github.com///commit/65f2a9090f4a226bfd96d9f1efe77285dffd56b1))
+- add MultiTaskLSTM class for multi-task learning with LSTM ([865f4f8](https://github.com///commit/865f4f8ab383bf8f2f4b99cdfd562f63edea9ee9))
+- implement SeqToSeqTaskGRU class for sequence-to-sequence tasks using GRU ([6c87962](https://github.com///commit/6c879621be52db8503cecfce921a6128a3de6f6c))
+- add BaseSeqNet class for sequence-based networks implementation ([e75a8d9](https://github.com///commit/e75a8d9f4fe2fab7bf277ea8b1d78393485e862a))
+- add BaseRNN class for RNN-based networks implementation ([eda4b29](https://github.com///commit/eda4b298fdc277cfecfd1a5d65023123a5d3baab))
+- update __init__.py to include new model classes and version bump to 0.3.0 ([a60538a](https://github.com///commit/a60538ab30a78b6d1f52ec7d0e5bb27d9bfd8704))
 - add prediction.py for machine translation prediction and evaluation ([38f0863](https://github.com///commit/38f0863788b34be2c1af6a4f9350c96fed4fae33))
 - add layout.py for configuring page and sidebar navigation ([4919b82](https://github.com///commit/4919b821793bfebe67544bc3b5f33d533b49d040))
 - add home.py for interactive machine translation evaluation system ([b6c258e](https://github.com///commit/b6c258ecf299641d9c529194168f420648efafd5))
@@ -85,9 +96,19 @@
 
 ### Bug Fixes
 
+- update import statements in trainer.py for consistency with renamed enumeration classes ([16dd723](https://github.com///commit/16dd72348dcef1ae21d232ef2d990ea516e9b577))
+- update import statements in predictor.py for consistency with renamed enumeration classes ([00af5f2](https://github.com///commit/00af5f204b2b20e68f38e25d7739aa0d3ebfea13))
+- update import statements in prediction.py for consistency with renamed enumeration classes ([49b76d5](https://github.com///commit/49b76d532038a9ade127e6464a7e92fc359e2c75))
+- update import statements in evaluator.py for consistency with renamed enumeration classes ([dfb6ee7](https://github.com///commit/dfb6ee76b0425330587c11f280181d3ccb79d129))
+- update import in __init__.py for consistency with new configuration types ([a5bd1c6](https://github.com///commit/a5bd1c6a134bd011e01741d101afc90190add79f))
+- update import names in __init__.py for consistency ([af2a480](https://github.com///commit/af2a4808b1e5218317b9c70d85f9ff8817dedb80))
 - Ensure main function is called and add newline at end of file ([cf61734](https://github.com///commit/cf617349cdb706be41ac3d6d2166ba09fe95ebee))
 
 ### Docs
 
-- update CHANGELOG.md with recent feature additions ([cca6be8](https://github.com///commit/cca6be843a25bde0e3c58e3274114eb06be54ae9))
+- update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
+
+### Code Refactoring
+
+- rename enumeration classes for clarity and consistency ([3967a6e](https://github.com///commit/3967a6e169ab60e41333f867a2ce99023c019214))
 

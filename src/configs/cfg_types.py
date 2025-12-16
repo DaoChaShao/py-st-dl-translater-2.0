@@ -14,16 +14,16 @@ from src.utils.stats import load_json
 
 
 @unique
-class Langs(StrEnum):
-    CN = "cn"
-    EN = "en"
+class Attentions(StrEnum):
+    DOT_PRODUCT = "dot"
+    GENERAL = "general"
+    CONCATENATION = "concat"
 
 
 @unique
-class TSSeqSeparate(StrEnum):
-    SEQ2ONE = "seq2one"
-    SEQ2SEQ = "seq2seq"
-    SEQ_SLICE = "slice"
+class Langs(StrEnum):
+    CN = "cn"
+    EN = "en"
 
 
 @unique
@@ -41,6 +41,12 @@ class Seq2SeqStrategies(StrEnum):
 
 
 @unique
+class Tasks(StrEnum):
+    CLASSIFICATION = "classification"
+    GENERATION = "generation"
+
+
+@unique
 class Tokens(StrEnum):
     PAD = "<PAD>"
     UNK = "<UNK>"
@@ -51,9 +57,10 @@ class Tokens(StrEnum):
 
 
 @unique
-class Tasks(StrEnum):
-    CLASSIFICATION = "classification"
-    GENERATION = "generation"
+class TSSeqSeparate(StrEnum):
+    SEQ2ONE = "seq2one"
+    SEQ2SEQ = "seq2seq"
+    SEQ_SLICE = "slice"
 
 
 if __name__ == "__main__":

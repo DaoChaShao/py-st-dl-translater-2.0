@@ -5,6 +5,13 @@
 
 ### Features
 
+- add data processing functionality in processor.py ([eb77f97](https://github.com///commit/eb77f971fad3d7affed0f59ea1c8b1a4ee67d77f))
+- add data preprocessing functionality in preprocessor.py ([79771a6](https://github.com///commit/79771a61965f246bc57ee9e94bf2ac3f33f15b8f))
+- add data preparation module in prepper.py ([303fc77](https://github.com///commit/303fc77d5780ffb8ff389d9ff2164e0641e7d96e))
+- update cfg_types.py to add new attention types and reorganize task and sequence classes ([d9c3e5a](https://github.com///commit/d9c3e5a0b2fa55e0eb58756b66746be4ac279d24))
+- add single-head attention mechanism in attention_single.py ([b60e07f](https://github.com///commit/b60e07ff27941fee86d7dd04b38ea1097b1b6360))
+- implement multi-head attention mechanism in attention_multi.py ([e0e2d56](https://github.com///commit/e0e2d563e37d3af2a4e6555e80441d6f29861ffd))
+- add __init__.py for data processing module in deep learning workflow ([c69f933](https://github.com///commit/c69f93396a49b100e79151692e89e45436c51213))
 - add SeqEncoder class for sequence encoding in RNN architectures ([1cf78c9](https://github.com///commit/1cf78c9a30b0c841cc9cb3871aaed4a0a51652d8))
 - add SeqDecoder class for sequence decoding in RNN architectures ([0c4c9a9](https://github.com///commit/0c4c9a96918083255d3f2cc019bc31984e89f621))
 - add SeqToSeqTaskRNN class for sequence-to-sequence tasks using RNN ([1c38ec2](https://github.com///commit/1c38ec2d10e95714ac72b98ffee4b035b487b259))
@@ -96,6 +103,7 @@
 
 ### Bug Fixes
 
+- update configuration categories and version in __init__.py ([6ecb6cb](https://github.com///commit/6ecb6cbc7685efbbd0ff765533fb53f9840662bb))
 - update import statements in trainer.py for consistency with renamed enumeration classes ([16dd723](https://github.com///commit/16dd72348dcef1ae21d232ef2d990ea516e9b577))
 - update import statements in predictor.py for consistency with renamed enumeration classes ([00af5f2](https://github.com///commit/00af5f204b2b20e68f38e25d7739aa0d3ebfea13))
 - update import statements in prediction.py for consistency with renamed enumeration classes ([49b76d5](https://github.com///commit/49b76d532038a9ade127e6464a7e92fc359e2c75))
@@ -104,8 +112,13 @@
 - update import names in __init__.py for consistency ([af2a480](https://github.com///commit/af2a4808b1e5218317b9c70d85f9ff8817dedb80))
 - Ensure main function is called and add newline at end of file ([cf61734](https://github.com///commit/cf617349cdb706be41ac3d6d2166ba09fe95ebee))
 
+### Chore
+
+- add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))
+
 ### Docs
 
+- update CHANGELOG.md with recent feature additions and bug fixes ([aacb87e](https://github.com///commit/aacb87e6b4eb1b2ba65d8163a5e9065126454bc8))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring

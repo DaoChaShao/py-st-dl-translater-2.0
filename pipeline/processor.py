@@ -13,7 +13,7 @@ from random import randint
 from tqdm import tqdm
 
 from src.configs.cfg_dl import CONFIG4DL
-from src.configs.cfg_types import Lang, Tokens
+from src.configs.cfg_types import Langs, Tokens
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines
 from src.utils.nlp import SpaCyBatchTokeniser, count_frequency, build_word2id_seqs, check_vocab_coverage
@@ -56,17 +56,17 @@ def process_data() -> tuple[list, list, list, list]:
         cn4valid: list[str] = [c for _, c in data4valid]
         en4valid: list[str] = [e for e, _ in data4valid]
         if amount is None:
-            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                 train_cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4train)
                 valid_cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4valid)
-            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                 train_en_items: list[list[str]] = tokeniser.batch_tokenise(en4train)
                 valid_en_items: list[list[str]] = tokeniser.batch_tokenise(en4valid)
         else:
-            with SpaCyBatchTokeniser(Lang.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
                 train_cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4train[:amount])
                 valid_cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4valid[:amount])
-            with SpaCyBatchTokeniser(Lang.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
                 train_en_items: list[list[str]] = tokeniser.batch_tokenise(en4train[:amount])
                 valid_en_items: list[list[str]] = tokeniser.batch_tokenise(en4valid[:amount])
         # print(train_cn_items[:3])
@@ -93,20 +93,20 @@ def process_data() -> tuple[list, list, list, list]:
         # print(special)
         dictionary_cn: dict[str, int] = {
             word: i for i, word in
-            tqdm(enumerate(special + cn_tokens), total=len(special + cn_tokens), desc=f"Building {Lang.CN} dictionary")
+            tqdm(enumerate(special + cn_tokens), total=len(special + cn_tokens), desc=f"Building {Langs.CN} dictionary")
         }
         save_json(dictionary_cn, CONFIG4DL.FILEPATHS.DICTIONARY_CN)
         dic: Path = Path(CONFIG4DL.FILEPATHS.DICTIONARY_CN)
-        print(f"{Lang.CN} Dictionary Saved Successfully!") if dic.exists() else print("Dictionary NOT Saved!")
+        print(f"{Langs.CN} Dictionary Saved Successfully!") if dic.exists() else print("Dictionary NOT Saved!")
         print()
         # Build an English dictionary
         dictionary_en: dict[str, int] = {
             word: i for i, word in
-            tqdm(enumerate(special + en_tokens), total=len(special + en_tokens), desc=f"Building {Lang.EN} dictionary")
+            tqdm(enumerate(special + en_tokens), total=len(special + en_tokens), desc=f"Building {Langs.EN} dictionary")
         }
         save_json(dictionary_en, CONFIG4DL.FILEPATHS.DICTIONARY_EN)
         dic: Path = Path(CONFIG4DL.FILEPATHS.DICTIONARY_EN)
-        print(f"{Lang.EN} Dictionary Saved Successfully!") if dic.exists() else print("Dictionary NOT Saved!")
+        print(f"{Langs.EN} Dictionary Saved Successfully!") if dic.exists() else print("Dictionary NOT Saved!")
         print()
 
         # Build sequence for train

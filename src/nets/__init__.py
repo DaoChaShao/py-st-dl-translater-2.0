@@ -33,6 +33,8 @@ Usage:
 __author__ = "Shawn Yu"
 __version__ = "0.3.0"
 
+from .attention_multi import MultiHeadAttention
+from .attention_single import SingleHeadAttention
 from .base_rnn import BaseRNN
 from .base_seq import BaseSeqNet
 from .multi_task_gru import MultiTaskGRU
@@ -48,6 +50,8 @@ from .unet4layers4sem import Standard4LayersUNetClassification
 from .unet5layers4sem import Standard5LayersUNetForClassification
 
 __all__ = [
+    "MultiHeadAttention",
+    "SingleHeadAttention",
     "BaseRNN",
     "BaseSeqNet",
     "MultiTaskGRU",

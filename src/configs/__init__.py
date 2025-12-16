@@ -40,7 +40,7 @@ from .cfg_dl import CONFIG4DL, Config4DL, DataPreprocessor, Hyperparameters
 from .cfg_mlp import CONFIG4MLP, Configuration4MLP, MLPParams
 from .cfg_rnn import CONFIG4RNN, Configuration4RNN, RNNParams
 from .cfg_unet import CONFIG4UNET, Configuration4UNet, UNetParams
-from .cfg_types import Attentions, Langs, Seq2SeqNets, Seq2SeqStrategies, Tasks, Tokens, TSSeqSeparate
+from .cfg_types import Attentions, Langs, SeqMergeMethods, Seq2SeqNets, Seq2SeqStrategies, Tasks, Tokens, TSSeqSeparate
 from .parser import set_argument_parser
 
 __all__ = [
@@ -50,6 +50,6 @@ __all__ = [
     "CONFIG4MLP", "Configuration4MLP", "MLPParams",
     "CONFIG4RNN", "Configuration4RNN", "RNNParams",
     "CONFIG4UNET", "Configuration4UNet", "UNetParams",
-    "Attentions", "Langs", "Seq2SeqNets", "Seq2SeqStrategies", "Tasks", "Tokens", "TSSeqSeparate",
+    "Attentions", "Langs", "SeqMergeMethods", "Seq2SeqNets", "Seq2SeqStrategies", "Tasks", "Tokens", "TSSeqSeparate",
     "set_argument_parser"
 ]

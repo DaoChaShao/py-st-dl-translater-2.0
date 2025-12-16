@@ -24,17 +24,16 @@ class MultiTaskGRU(BaseRNN):
                  *,
                  task: Tasks = Tasks.CLASSIFICATION, class_num: int = 2,
                  ) -> None:
-        kwargs = {
-            "vocab_size": vocab_size,
-            "embedding_dim": embedding_dim,
-            "hidden_size": hidden_size,
-            "num_layers": num_layers,
-            "dropout_rate": dropout_rate,
-            "bidirectional": bidirectional,
-            "accelerator": accelerator,
-            "PAD": PAD
-        }
-        super().__init__(**kwargs)
+        super().__init__(
+            vocab_size=vocab_size,
+            embedding_dim=embedding_dim,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout_rate=dropout_rate,
+            bidirectional=bidirectional,
+            accelerator=accelerator,
+            PAD=PAD
+        )
         """ Initialise the GRU class
         :param vocab_size: size of the vocabulary
         :param embedding_dim: dimension of the embedding layer

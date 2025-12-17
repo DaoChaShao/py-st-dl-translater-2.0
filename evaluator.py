@@ -9,15 +9,14 @@
 from functools import cache
 from numpy import mean as np_mean, max as np_max, min as np_min, median as np_median
 from pathlib import Path
-from random import choice
 from torch import Tensor, tensor, load, device, no_grad, long
 from tqdm import tqdm
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Langs, Tokens, Seq2SeqNets, Seq2SeqStrategies
-from src.nets.seq2seq import SeqToSeqCoder
+from src.configs.cfg_types import Langs, Tokens, SeqMergeMethods, Seq2SeqStrategies
+from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
 from src.utils.helper import Timer
-from src.utils.highlighter import starts, lines, red, green
+from src.utils.highlighter import starts, lines, green
 from src.utils.NLTK import bleu_score
 from src.utils.nlp import SpaCyBatchTokeniser, build_word2id_seqs
 from src.utils.SQL import SQLiteIII
@@ -91,29 +90,29 @@ def main() -> None:
         ****************************************************************
         """
         # Load the save model parameters
-        options: list[str] = [CONFIG4RNN.FILEPATHS.TRAINED_NET_GREEDY, CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM]
-        selection: str = choice(options)
-        params: Path = Path(selection)
+        params: Path = Path(CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM)
         if params.exists():
             print(f"Model {green(params.name)} Exists!")
 
             # Set up a model and load saved parameters
-            model = SeqToSeqCoder(
-                len(dictionary_cn),
-                len(dictionary_en),
+            model = SeqToSeqTaskGRU(
+                vocab_size_src=len(dictionary_cn),
+                vocab_size_tgt=len(dictionary_en),
                 embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
                 hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
                 num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
                 dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-                bid=True,
-                pad_idx4input=dictionary_cn[Tokens.PAD],
-                pad_idx4output=dictionary_en[Tokens.PAD],
-                net_category=Seq2SeqNets.GRU,
+                bidirectional=True,
+                accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
+                PAD_SRC=dictionary_cn[Tokens.PAD],
+                PAD_TGT=dictionary_en[Tokens.PAD],
                 SOS=dictionary_cn[Tokens.SOS],
-                EOS=dictionary_en[Tokens.EOS],
+                EOS=dictionary_cn[Tokens.EOS],
+                merge_method=SeqMergeMethods.CONCATENATE,
             )
-            dict_state: dict = load(params, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
-            model.load_state_dict(dict_state)
+            # dict_state: dict = load(params, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
+            # model.load_state_dict(dict_state)
+            model.load_model(params, strict=True)
             model.eval()
             print("Model Loaded Successfully!")
 
@@ -153,13 +152,13 @@ def main() -> None:
                 starts()
                 """
                 ****************************************************************
-                Evaluation Results for beam Model:
+                Evaluation Results for beam Model using concatenation:
                 ----------------------------------------------------------------
                 Sentence Amount: 4374
-                Mean BLEU:       0.1637
+                Mean BLEU:       0.1446
                 Highest BLEU:    1.0000
                 Lowest BLEU:     0.0000
-                Median BLEU:     0.0845
+                Median BLEU:     0.0700
                 ****************************************************************
                 Normal
                 ****************************************************************

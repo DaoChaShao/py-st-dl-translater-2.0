@@ -11,7 +11,7 @@ from pathlib import Path
 from torch import (Tensor, device, nn,
                    zeros,
                    save, load)
-from typing import final
+from typing import final, Literal
 
 WIDTH: int = 64
 
@@ -23,7 +23,7 @@ class BaseSeqNet(ABC, nn.Module):
                  vocab_size_src: int, vocab_size_tgt: int, embedding_dim: int, hidden_size: int, num_layers: int,
                  *,
                  dropout_rate: float = 0.3, bidirectional: bool = True,
-                 accelerator: str = "cpu",
+                 accelerator: str | Literal["cuda", "cpu"] = "cpu",
                  PAD_SRC: int = 0, PAD_TGT: int = 0, SOS: int = 2, EOS: int = 3,
                  ) -> None:
         super().__init__()
@@ -165,7 +165,7 @@ class BaseSeqNet(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def _merge_bidirectional_hidden(self, hidden: Tensor | tuple[Tensor, Tensor]) -> Tensor | tuple[Tensor, Tensor]:
+    def _merge_bidirectional_hidden(self, hidden: Tensor) -> Tensor | tuple[Tensor, Tensor]:
         """ Merge bidirectional hidden states for decoder initialization
         :param hidden: hidden state tensor(s)
         :return: merged hidden state tensor(s)
@@ -194,8 +194,9 @@ class BaseSeqNet(ABC, nn.Module):
 
     @abstractmethod
     def _greedy_decode(self,
-                       decoder_hidden: Tensor | tuple[Tensor, Tensor],
-                       batch_size: int, max_len: int, accelerator: device
+                       encoder_hidden: Tensor,
+                       batch_size: int, max_len: int, accelerator: device,
+                       decoder_hidden: Tensor | None = None,
                        ) -> Tensor:
         """ Greedy decoding strategy
         :param decoder_hidden: initial hidden state for the decoder
@@ -208,7 +209,7 @@ class BaseSeqNet(ABC, nn.Module):
 
     @abstractmethod
     def _beam_search_decode(self,
-                            decoder_hidden: Tensor | tuple[Tensor, Tensor],
+                            decoder_hidden: Tensor,
                             batch_size: int, max_len: int, beam_width: int, accelerator: device
                             ) -> Tensor:
         """ Beam search decoding strategy
@@ -235,7 +236,7 @@ class BaseSeqNet(ABC, nn.Module):
         :param path: path to load the model from
         :param strict: whether to strictly enforce that the keys in state_dict match the keys returned by this module's state_dict function
         """
-        self.load_state_dict(load(path), strict=strict)
+        self.load_state_dict(load(path, map_location=device(self._accelerator)), strict=strict)
         print("The model has been loaded successfully.")
 
     @final

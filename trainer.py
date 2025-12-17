@@ -56,7 +56,7 @@ def main() -> None:
             PAD_TGT=dictionary_en[Tokens.PAD],
             SOS=dictionary_cn[Tokens.SOS],
             EOS=dictionary_cn[Tokens.EOS],
-            merge_method=SeqMergeMethods.CONCATENATE,
+            merge_method=SeqMergeMethods.AVERAGE,
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -80,8 +80,8 @@ def main() -> None:
         - SOS Token:              2
         - EOS Token:              3
         ----------------------------------------------------------------
-        Total parameters:         4,364,661
-        Trainable parameters:     4,364,661
+        Total parameters:         7,051,893
+        Trainable parameters:     7,051,893
         Non-trainable parameters: 0
         ****************************************************************
         """
@@ -106,8 +106,12 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCATENATE}",
+            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.AVERAGE}",
         )
+        """
+        "epoch": 50/100, "strategy": "beam", "type": "concat", "bleu": 0.17304417490959167, "rouge": 0.5309731960296631,
+        "epoch": 79/100, "strategy": "beam", "type": "average", "bleu": 0.12595288455486298, "rouge": 0.4930764138698578,
+        """
 
 
 if __name__ == "__main__":

@@ -8,12 +8,12 @@
 
 from functools import cache
 from pathlib import Path
-from random import randint, choice
+from random import randint
 from torch import Tensor, load, device, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Langs, Tokens, Seq2SeqNets, Seq2SeqStrategies
-from src.nets.seq2seq import SeqToSeqCoder
+from src.configs.cfg_types import Langs, Tokens, SeqMergeMethods, Seq2SeqStrategies
+from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines, red, green, blue
 from src.utils.NLTK import bleu_score
@@ -91,29 +91,29 @@ def main() -> None:
         """
 
         # Load the save model parameters
-        options: list[str] = [CONFIG4RNN.FILEPATHS.TRAINED_NET_GREEDY, CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM]
-        selection: str = choice(options)
-        params: Path = Path(selection)
+        params: Path = Path(CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM)
         if params.exists():
             print(f"Model {green(params.name)} Exists!")
 
             # Set up a model and load saved parameters
-            model = SeqToSeqCoder(
-                len(dictionary_cn),
-                len(dictionary_en),
+            model = SeqToSeqTaskGRU(
+                vocab_size_src=len(dictionary_cn),
+                vocab_size_tgt=len(dictionary_en),
                 embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
                 hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
                 num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
                 dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-                bid=True,
-                pad_idx4input=dictionary_cn[Tokens.PAD],
-                pad_idx4output=dictionary_en[Tokens.PAD],
-                net_category=Seq2SeqNets.GRU,
+                bidirectional=True,
+                accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
+                PAD_SRC=dictionary_cn[Tokens.PAD],
+                PAD_TGT=dictionary_en[Tokens.PAD],
                 SOS=dictionary_cn[Tokens.SOS],
-                EOS=dictionary_en[Tokens.EOS],
+                EOS=dictionary_cn[Tokens.EOS],
+                merge_method=SeqMergeMethods.CONCATENATE,
             )
-            dict_state: dict = load(params, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
-            model.load_state_dict(dict_state)
+            # dict_state: dict = load(params, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
+            # model.load_state_dict(dict_state)
+            model.load_model(params, strict=True)
             model.eval()
             print("Model Loaded Successfully!")
 
@@ -125,6 +125,7 @@ def main() -> None:
             assert len(sequences) == len(en_items), "src and truth tgt length mismatch."
             idx: int = randint(0, len(sequences) - 1)
             seq: list[int] = sequences[idx]
+            # seq: list[int] = sequences[2102]
             # Convert the token to a tensor
             src: Tensor = item2tensor(seq, embedding=True, accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR)
             # Add batch size
@@ -144,6 +145,7 @@ def main() -> None:
                 hypothesis: list[str] = [word.strip() for word in pred if word != Tokens.EOS]
                 # Get the relevant reference
                 reference: list[str] = en_items[idx]
+                # reference: list[str] = en_items[2102]
 
                 bleu = bleu_score(reference, hypothesis)
                 starts()
@@ -151,6 +153,8 @@ def main() -> None:
                 lines()
                 print(f"Selected Data Index for Prediction: {red(str(idx))}")
                 print(f"Input Sentence (CN):                {cn4prove[idx]}")
+                # print(f"Selected Data Index for Prediction: {red(str(2102))}")
+                # print(f"Input Sentence (CN):                {cn4prove[2102]}")
                 print(f"Reference (EN):                     {reference}")
                 print(f"Predation (EN):                     {hypothesis}")
                 print(f"BLEU Score:                         {blue(f"{bleu:.4f}")}")
@@ -164,6 +168,15 @@ def main() -> None:
                 Reference (EN):                     ['he', 'like', 'listen', 'to', 'the', 'radio', '.']
                 Predation (EN):                     ['he', 'like', 'to', 'listen', 'to', 'the', 'radio', '.']
                 BLEU Score:                         0.5946
+                ****************************************************************
+                ****************************************************************
+                Evaluation Results for beam Model:
+                ----------------------------------------------------------------
+                Selected Data Index for Prediction: 3280
+                Input Sentence (CN):                你裁切纸张了吗？
+                Reference (EN):                     ['do', 'you', 'cut', 'the', 'paper', '?']
+                Predation (EN):                     ['do', 'you', 'have', 'any', '<UNK>', 'on', 'your', 'shoe', '?']
+                BLEU Score:                         0.0700
                 ****************************************************************
                 """
         else:

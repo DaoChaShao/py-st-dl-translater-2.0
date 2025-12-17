@@ -6,7 +6,8 @@
 # @File     :   seq_encoder.py
 # @Desc     :   
 
-from torch import Tensor, nn
+from torch import (Tensor, nn, zeros_like, device,
+                   randint)
 from typing import override
 
 from src.configs.cfg_types import Seq2SeqNets
@@ -43,7 +44,7 @@ class SeqEncoder(BaseRNN):
         :param accelerator: accelerator for PyTorch
         :param PAD: padding index for the embedding layer
         """
-        self._type: str = net_category
+        self._type: str = net_category.lower()
 
         self._net = self._select_net(self._type)(
             self._H, self._M, num_layers,
@@ -63,13 +64,53 @@ class SeqEncoder(BaseRNN):
 
         result = self._net(embeddings)
 
+        # Keep consistent return types
         if self._type == "lstm":
             outputs, (hidden, cell) = result
-            return outputs, (hidden, cell), lengths
         else:
+            # RNN or GRU
             outputs, hidden = result
-            return outputs, hidden, lengths
+            cell = zeros_like(hidden, device=device(self._accelerator))
+
+        return outputs, (hidden, cell), lengths
 
 
 if __name__ == "__main__":
-    pass
+    vocab_size = 10
+    embedding_dim = 8
+    hidden_size = 16
+    num_layers = 2
+    seq_len = 5
+    batch_size = 3
+
+    # Initialise encoder
+    gru = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="gru")
+    lstm = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="lstm")
+    rnn = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="rnn")
+
+    # Input random sequence (batch_size, seq_len)
+    src = randint(0, vocab_size, (batch_size, seq_len))
+
+    # Encoder forward
+    outputs_gru, (hidden_gru, cell_gru), lengths_gru = gru(src)
+    outputs_lstm, (hidden_lstm, cell_lstm), lengths_lstm = lstm(src)
+    outputs_rnn, (hidden_rnn, cell_rnn), lengths_rnn = rnn(src)
+
+    print("*" * 64)
+    print("Encoder Test Results")
+    print("*" * 64)
+    print("GRU Encoder outputs shape:", outputs_gru.shape)
+    print("GRU Hidden shape:", hidden_gru.shape)
+    print("GRU Cell shape:", cell_gru.shape)
+    print("GRU Lengths:", lengths_gru)
+    print("-" * 64)
+    print("LSTM Encoder outputs shape:", outputs_lstm.shape)
+    print("LSTM Hidden shape:", hidden_lstm.shape)
+    print("LSTM Cell shape:", cell_lstm.shape)
+    print("LSTM Lengths:", lengths_lstm)
+    print("-" * 64)
+    print("RNN Encoder outputs shape:", outputs_rnn.shape)
+    print("RNN Hidden shape:", hidden_rnn.shape)
+    print("RNN Cell shape:", cell_rnn.shape)
+    print("RNN Lengths:", lengths_rnn)
+    print("*" * 64)

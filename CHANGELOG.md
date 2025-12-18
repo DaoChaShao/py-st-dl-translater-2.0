@@ -1,10 +1,17 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-18)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-19)
 
 ### Features
 
+- update merge method to CONCAT and decode strategy to GREEDY in trainer ([7036461](https://github.com///commit/7036461c54de7e93bbd64c8c5a1422944564a7fd))
+- add training log for true-gru-greedy-mean model ([94e57ef](https://github.com///commit/94e57ef5fac8a35b0d8b1d6e2aeea29c157c6bfc))
+- add training log for true-gru-beam-mean model ([ed4ded3](https://github.com///commit/ed4ded307342680303fd68e60a0f7c9be1877fd7))
+- integrate sequence network initialization verification in main execution ([4ada2f1](https://github.com///commit/4ada2f1ce9d98c51b2d1c5bcc38be22dd730c0c7))
+- add network initialization verification function ([d91fa69](https://github.com///commit/d91fa69cafb3a25626afc0b3c5062717b48495b1))
+- add model-true-gru-greedy-mean.pth ([594d571](https://github.com///commit/594d571cea3511ad3f9d3877c67af3d60c03312d))
+- add model-true-gru-beam-mean.pth ([f625cc3](https://github.com///commit/f625cc31825006b6add58140405458e8a5e0c0cd))
 - add trainer4attn.py for attention-based Seq2Seq training ([2839624](https://github.com///commit/28396244a576756e05425ad1762416a71b925aea))
 - add attention mechanisms to module description and imports in __init__.py ([c6ca047](https://github.com///commit/c6ca0478dcce8bfe99d1a2dacf256cc03dfcf23c))
 - update merge method to AVERAGE and adjust parameter counts in trainer.py ([12a1af6](https://github.com///commit/12a1af6b486494aaf4eec1e7e746eab6d01d1f5c))
@@ -152,12 +159,15 @@
 
 ### Docs
 
-- update CHANGELOG.md with recent feature additions and bug fixes ([8e088cf](https://github.com///commit/8e088cfa4c335b1191dce8d6abf007b9159116d4))
+- update module documentation and improve category descriptions ([d9a4e44](https://github.com///commit/d9a4e443d7ce99509f58331f0a3732e8bfda204e))
+- update CHANGELOG.md with recent feature additions and bug fixes ([bd5e5ff](https://github.com///commit/bd5e5ff77afd530f0eb7a6b9c1afe099ecd14b8c))
 - update CHANGELOG.md with recent renaming and feature additions ([1fa1cf8](https://github.com///commit/1fa1cf85237e5940993e64d204da12eba18f1e92))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring
 
+- simplify weight initialization logic in init_weights method ([278e4f5](https://github.com///commit/278e4f5f5853d620b42d0d328fe49d5912e1eb06))
+- streamline weight initialization logic in init_weights method ([e2a59fe](https://github.com///commit/e2a59fee78b20d922b5a09bebb970ec248510b59))
 - rename SeqToSeqTaskGRU to GRUForSeqToSeq for clarity and update merge method in training configuration ([d992b9d](https://github.com///commit/d992b9db75630b4a70631179f405cc8406b928af))
 - rename SeqToSeqTaskRNN to RNNForSeqToSeq for clarity and update type hint for strategy parameter ([47c1ec2](https://github.com///commit/47c1ec2ca8ab77b51e0a1d25a8f87aef012497aa))
 - rename SeqToSeqTaskLSTM to LSTMForSeqToSeq for clarity ([195f911](https://github.com///commit/195f9114ab4ef72fe38e55e297fdb143fe40d885))

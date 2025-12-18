@@ -19,6 +19,7 @@ from src.configs.cfg_types import SeqMergeMethods, SeqStrategies
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
+from src.utils.PT import verify_seq_net_initialisation
 
 
 class GRUForSeqToSeq(BaseSeqNet):
@@ -99,19 +100,6 @@ class GRUForSeqToSeq(BaseSeqNet):
         :param hidden: hidden states from the encoder
         :return: merged hidden states
         """
-        # if not self._bid:
-        #     return hidden
-        #
-        # # Returns a single Tensor
-        # batch_size = hidden.size(1)
-        # hidden = hidden.view(self._C, self._num_directions, batch_size, self._M)
-        #
-        # if self._method == "average":
-        #     return (hidden.mean(dim=1),)  # (hidden.mean(dim=1),)
-        # elif self._method == "concat":
-        #     return (cat([hidden[:, 0], hidden[:, 1]], dim=-1),)
-        # else:
-        #     raise ValueError(f"Unknown merge method: {self._method}")
         return self._decoder.init_decoder_entries(hidden, merge_method=self._method)
 
     @override
@@ -268,35 +256,44 @@ class GRUForSeqToSeq(BaseSeqNet):
 
 
 if __name__ == "__main__":
-    options: list[SeqMergeMethods] = [
-        SeqMergeMethods.CONCAT,
-        SeqMergeMethods.MAX,
-        SeqMergeMethods.MEAN,
-        SeqMergeMethods.SUM
-    ]
+    from src.nets.seq2seq import SeqToSeqCoder
 
-    model = GRUForSeqToSeq(
+    gru = GRUForSeqToSeq(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,
         hidden_size=256,
         num_layers=2,
         bidirectional=True,
-        merge_method=choice(options)
+        merge_method="mean"
     )
 
-    model.summary()
+    coder = SeqToSeqCoder(
+        vocab_size_src=5000,
+        vocab_size_tgt=6000,
+        embedding_dim=128,
+        hidden_size=256,
+        num_layers=2,
+        bidirectional=True,
+        net_category="gru",
+        PAD_SRC=0,
+        PAD_TGT=0,
+        SOS=2,
+        EOS=3
+    )
 
     batch_size = 4
     src_len = 10
     tgt_len = 8
 
-    src = randint(3, 5000, (batch_size, src_len))
+    src = randint(3, gru._vocab_src, (batch_size, src_len))
     tgt = cat([
-        full((batch_size, 1), model._SOS),
-        randint(3, 6000, (batch_size, tgt_len - 2)),
-        full((batch_size, 1), model._EOS)
+        full((batch_size, 1), gru._SOS),
+        randint(3, gru._vocab_tgt, (batch_size, tgt_len - 2)),
+        full((batch_size, 1), gru._EOS)
     ], dim=1)
 
-    logits = model(src, tgt)
-    print(f"Forward test passed! Logits shape: {logits.shape}")
+    verify_seq_net_initialisation(
+        gru, src, tgt,
+        spare_model=coder, spare_src=src, spare_tgt=tgt,
+    )

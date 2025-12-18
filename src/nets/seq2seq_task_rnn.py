@@ -6,11 +6,12 @@
 # @File     :   seq2seq_task_rnn.py
 # @Desc     :   
 
+from math import log
 from random import choice
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
-                   tensor, topk, log,
+                   tensor, topk,
                    randint)
 from typing import override, Literal
 
@@ -20,7 +21,7 @@ from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 
 
-class SeqToSeqTaskRNN(BaseSeqNet):
+class RNNForSeqToSeq(BaseSeqNet):
     """ Sequence-to-Sequence Normal RNN Network for Sequence Tasks """
 
     def __init__(self,
@@ -135,7 +136,7 @@ class SeqToSeqTaskRNN(BaseSeqNet):
     @override
     def generate(self,
                  src: Tensor, max_len: int = 100,
-                 strategy: str | Literal["greedy", "beam"] = "greedy", beam_width: int = 5
+                 strategy: str | SeqStrategies | Literal["greedy", "beam"] = "greedy", beam_width: int = 5
                  ) -> Tensor:
         """ Generate sequences
         :param src: source/input tensor
@@ -275,7 +276,7 @@ if __name__ == "__main__":
         SeqMergeMethods.SUM
     ]
 
-    model = SeqToSeqTaskRNN(
+    model = RNNForSeqToSeq(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

@@ -18,13 +18,13 @@ from src.nets.attention_multi import MultiHeadAttention
 from src.nets.attention_single import SingleHeadAttention
 # ---
 
-from src.configs.cfg_types import Attentions, SeqMergeMethods
+from src.configs.cfg_types import AttnScorer, SeqMergeMethods
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 
 
-class AttentionRNNForSeqToSeq(BaseSeqNet):
+class AttnRNNForSeqToSeq(BaseSeqNet):
     """ Sequence-to-Sequence RNN Network for Sequence Tasks """
 
     def __init__(self,
@@ -36,7 +36,7 @@ class AttentionRNNForSeqToSeq(BaseSeqNet):
                  merge_method: str | SeqMergeMethods = "average",
                  # Attentional parameters (not used in GRU but reserved for future use)
                  use_attention: bool = False,
-                 attention_method: Attentions = "dot",
+                 attention_method: AttnScorer = "dot",
                  attention_type: str = "single",
                  head_num: int = 8,
                  # ---
@@ -80,7 +80,7 @@ class AttentionRNNForSeqToSeq(BaseSeqNet):
 
         # Attention parameters (not used in GRU but reserved for future use)
         self._use_attention: bool = use_attention
-        self._attention_method: Attentions = attention_method
+        self._attention_method: AttnScorer = attention_method
         self._attention_type: str = attention_type
         # ---
 

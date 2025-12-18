@@ -6,14 +6,15 @@
 # @File     :   seq2seq_task_lstm.py
 # @Desc     :   
 
+from random import choice
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
                    tensor, topk, log,
                    randint)
-from typing import override
+from typing import override, Literal
 
-from src.configs.cfg_types import SeqMergeMethods
+from src.configs.cfg_types import SeqMergeMethods, SeqStrategies
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
@@ -25,10 +26,10 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
     def __init__(self,
                  vocab_size_src: int, vocab_size_tgt: int, embedding_dim: int, hidden_size: int, num_layers: int,
                  dropout_rate: float = 0.3, bidirectional: bool = True,
-                 accelerator: str = "cpu",
+                 accelerator: str | Literal["cuda", "cpu"] = "cpu",
                  PAD_SRC: int = 0, PAD_TGT: int = 0, SOS: int = 2, EOS: int = 3,
                  *,
-                 merge_method: str | SeqMergeMethods = "average",
+                 merge_method: str | SeqMergeMethods | Literal["concat", "max", "mean", "sum"] = "mean",
                  ) -> None:
         super().__init__(
             vocab_size_src=vocab_size_src,
@@ -59,7 +60,7 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
         :param EOS: end-of-sequence token index
         :param net_category: network category (e.g., 'gru')
         """
-        self._method: str = merge_method
+        self._method: str = merge_method.lower()
 
         self._encoder: nn.Module = self.init_encoder()
         self._decoder: nn.Module = self.init_decoder()
@@ -92,7 +93,7 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
         )
 
     @override
-    def _merge_bidirectional_hidden(self, hidden: Tensor | tuple[Tensor, Tensor]) -> Tensor | tuple[Tensor, Tensor]:
+    def _merge_bidirectional_hidden(self, hidden: tuple[Tensor, Tensor]) -> tuple[Tensor, Tensor]:
         """ Merge bidirectional hidden states for decoder initialization
         :param hidden: hidden states from the encoder
         :return: merged hidden states
@@ -101,22 +102,10 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
             return hidden
 
         h, c = hidden
+        h_merged = self._decoder.init_decoder_entries(h, self._method)
+        c_merged = self._decoder.init_decoder_entries(c, self._method)
 
-        # Returns a single Tensor
-        batch_size = h.size(1)
-        h = h.view(self._C, self._num_directions, batch_size, self._M)
-        c = c.view(self._C, self._num_directions, batch_size, self._M)
-
-        if self._method == "average":
-            h_merged = h.mean(dim=1)  # [num_layers, batch_size, hidden_size]
-            c_merged = c.mean(dim=1)
-            return (h_merged, c_merged)
-        elif self._method == "concat":
-            h_merged = cat([h[:, 0], h[:, 1]], dim=-1)  # [num_layers, batch_size, hidden_size*2]
-            c_merged = cat([c[:, 0], c[:, 1]], dim=-1)
-            return (h_merged, c_merged)
-        else:
-            raise ValueError(f"Unknown merge method: {self._method}")
+        return (h_merged, c_merged)
 
     @override
     def forward(self, src: Tensor, tgt: Tensor) -> Tensor:
@@ -126,19 +115,20 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
         :return: output logits tensor
         """
         # Encode
-        encoder_outputs, encoder_hidden, src_lengths = self._encoder(src)
+        _, (hidden, cell), lengths_src = self._encoder(src)
 
         # Combine bidirectional hidden states
-        decoder_hidden = self._merge_bidirectional_hidden(encoder_hidden)
-
+        hidden_ety = self._merge_bidirectional_hidden((hidden, cell))
         # Decode input excludes the EOS token
-        decoder_input = tgt[:, :-1]  # Remove EOS token for decoder input
-        logits, _ = self._decoder(decoder_input, decoder_hidden)
+        input_ety = tgt[:, :-1]
+        logits, (_, _) = self._decoder(input_ety, hidden_ety)
 
         return logits
 
     @override
-    def generate(self, src: Tensor, max_len: int = 100, strategy: str = "greedy", beam_width: int = 5) -> Tensor:
+    def generate(self,
+                 src: Tensor, max_len: int = 100,
+                 strategy: str | SeqStrategies | Literal["greedy", "beam"] = "greedy", beam_width: int = 5) -> Tensor:
         """ Generate sequences
         :param src: source/input tensor
         :param max_len: maximum length of generated sequences
@@ -146,26 +136,27 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
         :param beam_width: beam width for beam search
         :return: generated sequences tensor
         """
-        batch_size = src.size(0)
+        batches = src.size(0)
 
         # Encoder
-        encoder_outputs, encoder_hidden, lengths = self._encoder(src)
+        _, (hidden, cell), lengths_src = self._encoder(src)
 
         # Combine bidirectional hidden states
-        decoder_hidden = self._merge_bidirectional_hidden(encoder_hidden)
+        decoder_hidden = self._merge_bidirectional_hidden((hidden, cell))
 
         match strategy:
             case "greedy":
-                return self._greedy_decode(decoder_hidden, batch_size, max_len, src.device)
+                return self._greedy_decode(decoder_hidden, batches, max_len, src.device)
             case "beam":
-                return self._beam_search_decode(decoder_hidden, batch_size, max_len, beam_width, src.device)
+                return self._beam_search_decode(decoder_hidden, batches, max_len, beam_width, src.device)
             case _:
                 raise ValueError(f"Unknown generation strategy: {strategy}")
 
     @override
     def _greedy_decode(self,
-                       decoder_hidden: Tensor | tuple[Tensor, Tensor],
-                       batch_size: int, max_len: int, accelerator: device
+                       decoder_hidden: tuple[Tensor, Tensor],
+                       batch_size: int, max_len: int, accelerator: device,
+                       encoder_hidden: Tensor | None = None
                        ) -> Tensor:
         """ Greedy decoding implementation
         :param decoder_hidden: initial hidden state for the decoder
@@ -186,7 +177,7 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
             if not active.any():
                 break
 
-            logits, decoder_hidden = self._decoder(decoder_input, decoder_hidden)
+            logits, (hn, cn) = self._decoder(decoder_input, decoder_hidden)
 
             next_token = logits.argmax(dim=2)
             next_token = where(active.unsqueeze(1), next_token, full_like(next_token, self._EOS))
@@ -195,11 +186,13 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
             active = active & (next_token.squeeze(1) != self._EOS)
             decoder_input = next_token
 
+            decoder_hidden = (hn, cn)
+
         return cat(generated, dim=1) if generated else empty((batch_size, 0), dtype=long, device=accelerator)
 
     @override
     def _beam_search_decode(self,
-                            decoder_hidden: Tensor | tuple[Tensor, Tensor],
+                            decoder_hidden: tuple[Tensor, Tensor],
                             batch_size: int, max_len: int, beam_width: int, accelerator: device
                             ) -> Tensor:
         """ Beam search decoding implementation
@@ -210,16 +203,18 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
         :param accelerator: device for computation
         :return: generated sequences tensor
         """
+        hn, cn = decoder_hidden
+
         results = []
 
         for idx in range(batch_size):
             # Get hidden state of a single example
-            batch_hidden = decoder_hidden[:, idx:idx + 1]
+            batch_hidden = (hn[:, idx:idx + 1], cn[:, idx:idx + 1])
 
             # Initialize beams
             beams = [{
                 "tokens": [self._SOS],
-                "score": tensor(0.0, device=accelerator),
+                "score": 0.0,
                 "hidden": batch_hidden,
                 "finished": False
             }]
@@ -235,7 +230,7 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
                     last_token = beam["tokens"][-1]
                     input_token = tensor([[last_token]], device=accelerator)
 
-                    logits, new_hidden = self._decoder(input_token, beam["hidden"])
+                    logits, (hn_new, cn_new) = self._decoder(input_token, beam["hidden"])
                     probs = nn.functional.softmax(logits[:, -1, :], dim=-1)
 
                     top_k_probs, top_k_indices = topk(probs, beam_width, dim=-1)
@@ -246,8 +241,8 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
 
                         new_beam = {
                             "tokens": beam["tokens"] + [token],
-                            "score": beam["score"] + log(tensor(token_prob + 1e-10, device=accelerator)),
-                            "hidden": new_hidden,
+                            "score": beam["score"] + log(token_prob + 1e-10),
+                            "hidden": (hn_new, cn_new),
                             "finished": (token == self._EOS)
                         }
                         new_beams.append(new_beam)
@@ -266,6 +261,13 @@ class SeqToSeqTaskLSTM(BaseSeqNet):
 
 
 if __name__ == "__main__":
+    options: list[SeqMergeMethods] = [
+        SeqMergeMethods.CONCAT,
+        SeqMergeMethods.MAX,
+        SeqMergeMethods.MEAN,
+        SeqMergeMethods.SUM
+    ]
+
     model = SeqToSeqTaskLSTM(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
@@ -273,7 +275,7 @@ if __name__ == "__main__":
         hidden_size=256,
         num_layers=2,
         bidirectional=True,
-        merge_method="average"
+        merge_method=choice(options)
     )
 
     model.summary()

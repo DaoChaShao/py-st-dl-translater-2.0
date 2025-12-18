@@ -8,9 +8,9 @@
 
 from torch import (Tensor, nn, zeros_like, device,
                    randint)
-from typing import override
+from typing import override, Literal
 
-from src.configs.cfg_types import Seq2SeqNets
+from src.configs.cfg_types import SeqNets
 from src.nets.base_rnn import BaseRNN
 
 
@@ -18,10 +18,10 @@ class SeqEncoder(BaseRNN):
     def __init__(self,
                  vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int,
                  dropout_rate: float = 0.3, bidirectional: bool = True,
-                 accelerator: str = "cpu",
+                 accelerator: str | Literal["cuda", "cpu"] = "cpu",
                  PAD: int = 0,
                  *,
-                 net_category: Seq2SeqNets | str = Seq2SeqNets.GRU,
+                 net_category: SeqNets | str = SeqNets.GRU,
                  ) -> None:
         kwargs = {
             "vocab_size": vocab_size,
@@ -55,6 +55,7 @@ class SeqEncoder(BaseRNN):
     @staticmethod
     def _select_net(net_category: str) -> type:
         nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
+
         return nets[net_category]
 
     @override

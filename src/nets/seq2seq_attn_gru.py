@@ -6,10 +6,11 @@
 # @File     :   seq2seq_attn_gru.py
 # @Desc     :   
 
+from math import log
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
-                   tensor, topk, log,
+                   tensor, topk,
                    randint)
 from typing import override, final, Literal
 
@@ -374,7 +375,7 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
                         token_prob = max(top_k_probs[0, i].item(), 1e-10)
                         new_beam = {
                             "tokens": beam["tokens"] + [token],
-                            "score": beam["score"] + log(tensor(token_prob + 1e-10, device=accelerator)),
+                            "score": beam["score"] + log(token_prob + 1e-10),
                             "hidden": hn_tgt,
                             "finished": (token == self._EOS)
                         }

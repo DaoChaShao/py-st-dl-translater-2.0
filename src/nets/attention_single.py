@@ -8,7 +8,7 @@
 
 from torch import (Tensor, nn, bmm, cat)
 
-from src.configs.cfg_types import Attentions
+from src.configs.cfg_types import AttnScorer
 from typing import Literal
 
 
@@ -17,7 +17,7 @@ class SingleHeadAttention(nn.Module):
 
     def __init__(self,
                  encoder_hidden_size: int, decoder_hidden_size: int,
-                 method: str | Attentions | Literal["dot", "general", "concat"] = "dot"
+                 method: str | AttnScorer | Literal["dot", "general", "concat"] = "dot"
                  ) -> None:
         """ Initialize the attention mechanism
         :param encoder_hidden_size: hidden state dimension
@@ -72,7 +72,7 @@ class SingleHeadAttention(nn.Module):
         :param decoder_hidden: decoder hidden state [1, batch_size, hidden_size]
         :return: attention energies [batch_size, src_len]
         """
-        print("Dot product attention score called.")
+        # print("Dot product attention score called.")
         # encoder_outputs: [batch, src_len, hidden]
         # print(f"dot encoder outpus: {encoder_outputs.shape}")
         # hidden: [1, batch_size, hidden_size]
@@ -92,7 +92,7 @@ class SingleHeadAttention(nn.Module):
         :param decoder_hidden: decoder hidden state [1, batch_size, hidden_size]
         :return: attention weights [batch_size, src_len], context vector [batch_size, hidden_size]
         """
-        print("General attention score called.")
+        # print("General attention score called.")
         # hidden: [1, batch_size, hidden_size]
         hidden = decoder_hidden.squeeze(0)  # [batch_size, hidden_size]
 
@@ -112,7 +112,7 @@ class SingleHeadAttention(nn.Module):
         :param decoder_hidden: decoder hidden state [1, batch_size, hidden_size]
         :return: attention weights [batch_size, src_len], context vector [batch_size, hidden_size]
         """
-        print("Concat attention score called.")
+        # print("Concat attention score called.")
 
         # hidden: [batch_size, hidden_size]
         hidden = decoder_hidden.unsqueeze(1).expand(-1, encoder_outputs.size(1), -1)

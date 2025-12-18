@@ -8,9 +8,9 @@
 
 from torch import (Tensor, nn, device, zeros_like,
                    randint)
-from typing import final, Literal
+from typing import final, Literal, Final
 
-from src.configs.cfg_types import Seq2SeqNets
+from src.configs.cfg_types import SeqNets
 from src.nets.seq_encoder import SeqEncoder
 
 
@@ -20,7 +20,7 @@ class SeqDecoder(nn.Module):
                  dropout_rate: float = 0.3, bidirectional: bool = False,
                  accelerator: str | Literal["cuda", "cpu"] = "cpu", PAD: int = 0,
                  *,
-                 net_category: str | Seq2SeqNets | Literal["gru", "lstm", "rnn"] = Seq2SeqNets.GRU,
+                 net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = SeqNets.GRU,
                  ) -> None:
         super().__init__()
         """ Initialise the Decoder class
@@ -40,8 +40,8 @@ class SeqDecoder(nn.Module):
         self._C: int = num_layers  # RNN layers count
         self._dropout: float = dropout_rate if num_layers > 1 else 0.0
         self._bid: bool = bidirectional
-        self._accelerator: device = device(accelerator)
-        self._PAD: int = PAD
+        self._accelerator: device = device(accelerator.lower())
+        self._PAD: Final[int] = PAD
         self._type: str = net_category.lower()  # Network category
 
         self._embed = nn.Embedding(self._L, self._H, padding_idx=self._PAD)

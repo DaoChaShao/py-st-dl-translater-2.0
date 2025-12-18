@@ -8,7 +8,7 @@
 
 """
 ****************************************************************
-ML/Data Processing Configuration Mudules
+ML/Data Processing Configuration Modules
 ----------------------------------------------------------------
 This package provides comprehensive configurations and utility
 modules for machine learning, NLP, CV, and general data processing.
@@ -20,7 +20,7 @@ Main Categories:
 + cfg_mlp        : MLP-specific parameters (CONFIG4MLP, MLPParams)
 + cfg_rnn        : RNN-specific parameters (CONFIG4RNN, RNNParams)
 + cfg_unet       : UNet-specific parameters (CONFIG4UNET, UNetParams)
-+ cfg_types      : Type definitions and enums (Attentions, Langs, Tasks, Tokens, etc.)
++ cfg_types      : Type definitions and enums (Attentions, Langs, Tasks, Tokens, SeqStrategies, etc.)
 + parser         : Parser module for command line arguments
 
 Usage:
@@ -40,16 +40,33 @@ from .cfg_dl import CONFIG4DL, Config4DL, DataPreprocessor, Hyperparameters
 from .cfg_mlp import CONFIG4MLP, Configuration4MLP, MLPParams
 from .cfg_rnn import CONFIG4RNN, Configuration4RNN, RNNParams
 from .cfg_unet import CONFIG4UNET, Configuration4UNet, UNetParams
-from .cfg_types import Attentions, Langs, SeqMergeMethods, Seq2SeqNets, Seq2SeqStrategies, Tasks, Tokens, TSSeqSeparate
+from .cfg_types import (AttnHeads, AttnScorer,
+                        Languages,
+                        SeqMergeMethods, SeqNets, SeqStrategies,
+                        Tasks,
+                        Tokens,
+                        SeqSeparator)
 from .parser import set_argument_parser
 
 __all__ = [
     "CONFIG", "Config", "Database", "FilePaths", "Punctuations",
+
     "CONFIG4DL", "Config4DL", "DataPreprocessor", "Hyperparameters",
+
     "CONFIG4CNN", "Configuration4CNN", "CNNParams",
+
     "CONFIG4MLP", "Configuration4MLP", "MLPParams",
+
     "CONFIG4RNN", "Configuration4RNN", "RNNParams",
+
     "CONFIG4UNET", "Configuration4UNet", "UNetParams",
-    "Attentions", "Langs", "SeqMergeMethods", "Seq2SeqNets", "Seq2SeqStrategies", "Tasks", "Tokens", "TSSeqSeparate",
+
+    "AttnHeads", "AttnScorer",
+    "Languages",
+    "SeqMergeMethods", "SeqNets", "SeqStrategies",
+    "Tasks",
+    "Tokens",
+    "SeqSeparator",
+
     "set_argument_parser"
 ]

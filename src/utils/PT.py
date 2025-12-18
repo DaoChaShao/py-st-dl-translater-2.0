@@ -13,7 +13,8 @@ from pathlib import Path
 from random import seed as rnd_seed, getstate, setstate
 from sklearn.utils.class_weight import compute_class_weight
 from torch import (cuda, backends, Tensor, tensor, float32, long,
-                   manual_seed, get_rng_state, set_rng_state)
+                   manual_seed, get_rng_state, set_rng_state,
+                   nn, unique, no_grad)
 from torch.utils.tensorboard import SummaryWriter
 
 from src.utils.decorator import timer
@@ -249,6 +250,113 @@ class TensorLogWriter:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._writer:
             self._writer.close()
+
+
+@timer
+def verify_seq_net_initialisation(
+        model: nn.Module, src: Tensor, tgt: Tensor,
+        *,
+        spare_model: nn.Module | None = None, spare_src: Tensor | None = None, spare_tgt: Tensor | None = None,
+) -> None:
+    if spare_model is None:
+        print("*" * 64)
+        print("Torch Network Initialization Verification")
+        print("-" * 64)
+        # Checking embedding initialization
+        std: float | None = None
+        for name, param in model.named_parameters():
+            if any(key in name for key in ["embed", "embedder"]):
+                print(f"Model - {name}: mean={param.mean():.6f}, std={param.std():.6f}, "
+                      f"range=[{param.min():.6f}, {param.max():.6f}]")
+                std = param.std().item()
+        print("-" * 64)
+
+        # Bias initialization check
+        for name, param in model.named_parameters():
+            if "bias" in name:
+                unique_vals = unique(param.data)
+                print(f"Model- {name}: shape={param.shape}, unique values={len(unique_vals)}", end=" ")
+                if len(unique_vals) <= 3:
+                    print(f"value={unique_vals.tolist()}")
+        print("-" * 64)
+
+        # Forward pass check
+        model.eval()
+        with no_grad():
+            logits = model(src, tgt)
+            print(f"logits shape: {logits.shape}, "
+                  f"logits range=[{logits.min():.4f}, {logits.max():.4f}], "
+                  f"logits mean±std=[{logits.mean():.4f} ± {logits.std():.4f}]")
+        print("-" * 64)
+
+        # Final verdict
+        if abs(std - 0.01) > 0.005:
+            print("x The embedding initialisation error！The std should be close to 0.01!")
+        else:
+            print("o The model's embedding initialisation is correct.")
+        print("*" * 64)
+    else:
+        print("*" * 64)
+        print("Network Initialization Verification Comparison")
+        print("-" * 64)
+        # Checking embedding initialization
+        model_std, spare_std = float, float
+        for name, param in model.named_parameters():
+            if any(key in name for key in ["embed", "embedder"]):
+                print(f"Main Model - {name}: mean={param.mean():.6f}, std={param.std():.6f}, "
+                      f"range=[{param.min():.6f}, {param.max():.6f}]")
+                model_std = param.std().item()
+        for name, param in spare_model.named_parameters():
+            if any(key in name for key in ["embed", "embedder"]):
+                print(f"Spare Model - {name}: mean={param.mean():.6f}, std={param.std():.6f}, "
+                      f"range=[{param.min():.6f}, {param.max():.6f}]")
+                spare_std = param.std().item()
+        print(f"Embedding std Comparison: {abs(model_std - spare_std):.6f}")
+        print("-" * 64)
+
+        # Bias initialization check
+        for name, param in model.named_parameters():
+            if "bias" in name:
+                unique_vals = unique(param.data)
+                print(f"Main Model - {name}: shape={param.shape}, unique values={len(unique_vals)}", end=" ")
+                if len(unique_vals) <= 3:
+                    print(f"value={unique_vals.tolist()}")
+        for name, param in spare_model.named_parameters():
+            if "bias" in name:
+                unique_vals = unique(param.data)
+                print(f"Spare Model - {name}: shape={param.shape}, unique values={len(unique_vals)}", end=" ")
+                if len(unique_vals) <= 3:
+                    print(f"value: {unique_vals.tolist()}")
+        print("-" * 64)
+
+        # Forward pass check
+        model.eval()
+        with no_grad():
+            model_logits = model(src, tgt)
+            print(f"Main Model: logits shape: {model_logits.shape}, "
+                  f"logits range=[{model_logits.min():.4f}, {model_logits.max():.4f}], "
+                  f"logits mean±std=[{model_logits.mean():.4f} ± {model_logits.std():.4f}]")
+        spare_model.eval()
+        with no_grad():
+            spare_logits = spare_model(spare_src, spare_tgt)
+            print(f"Spare Model: logits shape: {spare_logits.shape}, "
+                  f"logits range=[{spare_logits.min():.4f}, {spare_logits.max():.4f}], "
+                  f"logits mean±std=[{spare_logits.mean():.4f} ± {spare_logits.std():.4f}]")
+        # Comparing logits differences
+        print(f"logits diffs in Mean: {abs(model_logits.mean() - spare_logits.mean()):.6f}")
+        print(f"logits diffs in std: {abs(model_logits.std() - spare_logits.std()):.6f}")
+        print("-" * 64)
+
+        # Final verdict
+        if abs(model_std - 0.01) > 0.005:
+            print("x The main model embedding initialisation error！The std should be close to 0.01!")
+        else:
+            print("o The main model's embedding initialisation is correct.")
+        if abs(spare_std - 0.01) > 0.005:
+            print("x The spare model's embedding initialisation error！The std should be close to 0.01!")
+        else:
+            print("o The spare model's embedding initialisation is correct.")
+        print("*" * 64)
 
 
 if __name__ == "__main__":

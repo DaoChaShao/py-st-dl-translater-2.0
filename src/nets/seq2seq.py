@@ -12,7 +12,9 @@ from torch import (nn, Tensor, tensor,
                    randint, ones, bool as torch_bool, where, full_like, empty,
                    topk)
 from torch.xpu import device
+from typing import final, Final, Literal
 
+from src.configs.cfg_types import SeqNets, SeqStrategies
 from src.utils.highlighter import starts, lines
 
 WIDTH: int = 64
@@ -22,9 +24,9 @@ class SeqEncoder(nn.Module):
     def __init__(self,
                  vocab_size: int,
                  embedding_dim: int, hidden_size: int, num_layers: int,
-                 dropout_rate: float = 0.3, bid: bool = True,
-                 pad_idx: int = 0,
-                 net_category: str = "gru",
+                 dropout_rate: float = 0.3, bidirectional: bool = True,
+                 PAD: int = 0,
+                 net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = "gru",
                  ):
         super().__init__()
         """ Initialise the Encoder class
@@ -33,30 +35,36 @@ class SeqEncoder(nn.Module):
         :param hidden_dim: dimension of the hidden layer
         :param num_layers: number of RNN layers
         :param dropout_rate: dropout rate for regularization
-        :param bid: bidirectional flag
-        :param pad_idx: padding index for the embedding layer
+        :param bidirectional: bidirectional flag
+        :param PAD: padding index for the embedding layer
         :param net_category: network category (e.g., 'gru')
         """
-        nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
+        self._L: int = vocab_size  # Lexicon/Vocabulary size for encoder / input
+        self._H: int = embedding_dim  # Embedding dimension
+        self._M: int = hidden_size  # Hidden dimension
+        self._C: int = num_layers  # RNN layers count
+        self._type: str | SeqNets = net_category.lower()  # Network category
 
-        self._L = vocab_size  # Lexicon/Vocabulary size for encoder / input
-        self._H = embedding_dim  # Embedding dimension
-        self._M = hidden_size  # Hidden dimension
-        self._C = num_layers  # RNN layers count
-        self._type = net_category  # Network category
-
-        self._embedder = nn.Embedding(self._L, self._H, padding_idx=pad_idx)
-        self._net = nets[net_category](
+        self._embed = nn.Embedding(self._L, self._H, padding_idx=PAD)
+        self._net = self._select_net(self._type)(
             self._H, self._M, num_layers,
-            batch_first=True, bidirectional=bid,
+            batch_first=True, bidirectional=bidirectional,
             dropout=dropout_rate if num_layers > 1 else 0.0
         )
 
-    def forward(self, src: Tensor) -> tuple[Tensor, Tensor, Tensor] | tuple[Tensor, tuple[Tensor, Tensor], Tensor]:
-        embedded = self._embedder(src)
-        lengths: Tensor = (src != self._embedder.padding_idx).sum(dim=1)
+    @staticmethod
+    def _select_net(net_category: str) -> type:
+        nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
+        if net_category not in nets:
+            raise ValueError(f"Unknown network category: {net_category}")
 
-        result = self._net(embedded)
+        return nets[net_category]
+
+    def forward(self, src: Tensor) -> tuple[Tensor, Tensor, Tensor] | tuple[Tensor, tuple[Tensor, Tensor], Tensor]:
+        embeddings = self._embed(src)
+        lengths: Tensor = (src != self._embed.padding_idx).sum(dim=1)
+
+        result = self._net(embeddings)
 
         if self._type == "lstm":
             outputs, (hidden, cell) = result
@@ -69,8 +77,9 @@ class SeqEncoder(nn.Module):
 class SeqDecoder(nn.Module):
     def __init__(self,
                  vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int,
-                 dropout_rate: float = 0.3, pad_idx: int = 0,
-                 net_category: str = "gru",
+                 dropout_rate: float = 0.3, bidirectional: bool = False,
+                 PAD: int = 0,
+                 net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = "gru",
                  ):
         super().__init__()
         """ Initialise the Decoder class
@@ -82,32 +91,40 @@ class SeqDecoder(nn.Module):
         :param pad_idx: padding index for the embedding layer
         :param net_category: network category (e.g., 'gru')
         """
-        nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
+        self._L: int = vocab_size  # Lexicon/Vocabulary size
+        self._H: int = embedding_dim  # Embedding dimension
+        self._M: int = hidden_size  # Hidden dimension
+        self._C: int = num_layers  # RNN layers count
+        self._bid: bool = bidirectional
+        self._type: str | SeqNets = net_category.lower()  # Network category
 
-        self._L = vocab_size  # Lexicon/Vocabulary size
-        self._H = embedding_dim  # Embedding dimension
-        self._M = hidden_size  # Hidden dimension
-        self._C = num_layers  # RNN layers count
-        self._type = net_category  # Network category
-
-        self._embedder = nn.Embedding(self._L, self._H, padding_idx=pad_idx)
-        self._net = nets[net_category](
-            self._H, self._M, num_layers, batch_first=True,
+        self._embed = nn.Embedding(self._L, self._H, padding_idx=PAD)
+        self._net = self._select_net(self._type)(
+            self._H, self._M, num_layers,
+            batch_first=True, bidirectional=self._bid,
             dropout=dropout_rate if num_layers > 1 else 0.0
         )
         self._dropout = nn.Dropout(p=dropout_rate if num_layers > 1 else 0.0)
         self._linear = nn.Linear(self._M, self._L)
 
+    @staticmethod
+    def _select_net(net_category: str) -> type:
+        nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
+        if net_category not in nets:
+            raise ValueError(f"Unknown network category: {net_category}")
+
+        return nets[net_category]
+
     def forward(self, tgt: Tensor, hidden: Tensor | tuple[Tensor, Tensor]) -> tuple:
-        embedded = self._embedder(tgt)
+        embeddings = self._embed(tgt)
 
         if self._type == "lstm":
-            outputs, (hn, cn) = self._net(embedded, hidden)
+            outputs, (hn, cn) = self._net(embeddings, hidden)
             logits = self._linear(self._dropout(outputs))
             return logits, (hn, cn)
         else:
             h = hidden[0] if isinstance(hidden, tuple) else hidden
-            outputs, hn = self._net(embedded, h)
+            outputs, hn = self._net(embeddings, h)
             logits = self._linear(self._dropout(outputs))
             return logits, (hn,)
 
@@ -116,48 +133,48 @@ class SeqToSeqCoder(nn.Module):
     """ An RNN model for sequence-to-sequence tasks using PyTorch """
 
     def __init__(self,
-                 vocab_size4input: int, vocab_size4output: int,
+                 vocab_size_src: int, vocab_size_tgt: int,
                  embedding_dim: int, hidden_size: int, num_layers: int,
-                 dropout_rate: float = 0.3, bid: bool = True,
-                 pad_idx4input: int = 0, pad_idx4output: int = 0,
-                 net_category: str = "gru",
+                 dropout_rate: float = 0.3, bidirectional: bool = True,
+                 PAD_SRC: int = 0, PAD_TGT: int = 0,
+                 net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = "gru",
                  SOS: int = 2, EOS: int = 3,
                  ):
         super().__init__()
         """ Initialise the SeqToSeqRNN class
-        :param vocab_size4input: size of the input vocabulary
-        :param vocab_size4output: size of the output vocabulary
+        :param vocab_size_src: size of the input vocabulary
+        :param vocab_size_tgt: size of the output vocabulary
         :param embedding_dim: dimension of the embedding layer
         :param hidden_dim: dimension of the hidden layer
         :param num_layers: number of RNN layers
         :param dropout_rate: dropout rate for regularization
-        :param bid: bidirectional flag for the encoder
-        :param pad_idx4input: padding index for the input embedding layer
-        :param pad_idx4output: padding index for the output embedding layer
+        :param bidirectional: bidirectional flag for the encoder
+        :param PAD_SRC: padding index for the input embedding layer
+        :param PAD_TGT: padding index for the output embedding layer
         :param accelerator: computation accelerator (e.g., 'cpu', 'cuda')
         :param net_category: network category (e.g., 'gru')
         :param SOS: start-of-sequence token index
         :param EOS: end-of-sequence token index
         """
-        self._L4IN = vocab_size4input  # Lexicon/Vocabulary size for encoder / input
-        self._L4OUT = vocab_size4output  # Lexicon/Vocabulary size for decoder / output
-        self._H = embedding_dim  # Embedding dimension
-        self._M = hidden_size  # Hidden dimension
-        self._C = num_layers  # RNN layers count
-        self._bid = bid  # Bidirectional flag for encoder
-        self._type = net_category  # Network category
-        self._SOS = SOS  # Start-of-Sequence token index
-        self._EOS = EOS  # End-of-Sequence token index
+        self._size_src: int = vocab_size_src  # Lexicon/Vocabulary size for encoder / input
+        self._size_tgt: int = vocab_size_tgt  # Lexicon/Vocabulary size for decoder / output
+        self._H: int = embedding_dim  # Embedding dimension
+        self._M: int = hidden_size  # Hidden dimension
+        self._C: int = num_layers  # RNN layers count
+        self._bid: bool = bidirectional  # Bidirectional flag for encoder
+        self._type: str | SeqNets = net_category.lower()  # Network category
+        self._SOS: Final[int] = SOS  # Start-of-Sequence token index
+        self._EOS: Final[int] = EOS  # End-of-Sequence token index
 
         self._encoder = SeqEncoder(
-            self._L4IN, self._H, self._M, self._C,
+            self._size_src, self._H, self._M, self._C,
             dropout_rate=dropout_rate if num_layers > 1 else 0.0,
-            bid=self._bid, pad_idx=pad_idx4input, net_category=net_category,
+            bidirectional=self._bid, PAD=PAD_SRC, net_category=net_category,
         )
         self._decoder = SeqDecoder(
-            self._L4OUT, self._H, self._M, self._C,
+            self._size_tgt, self._H, self._M, self._C,
             dropout_rate=dropout_rate if num_layers > 1 else 0.0,
-            pad_idx=pad_idx4output, net_category=net_category,
+            bidirectional=False, PAD=PAD_TGT, net_category=net_category,
         )
 
         self._init_weights()
@@ -206,24 +223,27 @@ class SeqToSeqCoder(nn.Module):
 
     def summary(self):
         """ Print a summary of the model architecture and parameters """
-        total_params = sum(p.numel() for p in self.parameters())
-        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
-
         print("*" * WIDTH)
         print(f"Model: {self.__class__.__name__}")
         print("-" * WIDTH)
-        print(f"Encoder Vocab Size: {self._L4IN}")
-        print(f"Decoder Vocab Size: {self._L4OUT}")
+        print(f"Encoder Vocab Size: {self._size_src}")
+        print(f"Decoder Vocab Size: {self._size_tgt}")
         print(f"Embedding Dim: {self._H}")
         print(f"Hidden Size: {self._M}")
         print(f"Num Layers: {self._C}")
         print(f"Bidirectional Encoder: {self._bid}")
         print(f"RNN Type: {self._type}")
+        print("-" * WIDTH)
+        total_params = sum(p.numel() for p in self.parameters())
+        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
         print(f"Total Parameters: {total_params:,}")
         print(f"Trainable Parameters: {trainable_params:,}")
         print("*" * WIDTH)
 
-    def generate(self, src: Tensor, max_len: int = 100, strategy: str = "greedy", beam_width: int = 5) -> Tensor:
+    def generate(self,
+                 src: Tensor, max_len: int = 100,
+                 strategy: str | SeqStrategies | Literal["greedy", "beam"] = "greedy", beam_width: int = 5
+                 ) -> Tensor:
         """ Regression generate automatically
         :param src: source/input tensor
         :param max_len: maximum length of the generated sequence
@@ -419,12 +439,12 @@ if __name__ == "__main__":
         lines()
 
         model = SeqToSeqCoder(
-            vocab_size4input=5000,
-            vocab_size4output=6000,
+            vocab_size_src=5000,
+            vocab_size_tgt=6000,
             embedding_dim=128,
             hidden_size=256,
             num_layers=2,
-            bid=bid,
+            bidirectional=bid,
             net_category=rnn_type
         )
 

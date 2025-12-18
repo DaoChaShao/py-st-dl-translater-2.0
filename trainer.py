@@ -10,7 +10,7 @@ from pathlib import Path
 from torch import optim, nn
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Tokens, Seq2SeqNets, Seq2SeqStrategies, SeqMergeMethods
+from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethods
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
 from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
@@ -96,7 +96,7 @@ def main() -> None:
             PAD=dictionary_en[Tokens.PAD],
             SOS=dictionary_en[Tokens.SOS],
             EOS=dictionary_en[Tokens.EOS],
-            decode_strategy=Seq2SeqStrategies.BEAM_SEARCH,
+            decode_strategy=SeqStrategies.BEAM_SEARCH,
             beam_width=CONFIG4RNN.PARAMETERS.BEAM_SIZE,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
         )
@@ -106,7 +106,7 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{Seq2SeqNets.GRU}-{Seq2SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.AVERAGE}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.AVERAGE}",
         )
         """
         "epoch": 50/100, "strategy": "beam", "type": "concat", "bleu": 0.17304417490959167, "rouge": 0.5309731960296631,

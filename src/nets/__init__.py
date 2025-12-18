@@ -45,9 +45,9 @@ from .seq2seq import SeqToSeqCoder
 from .seq2seq_attn_gru import AttnGRUForSeqToSeq
 from .seq2seq_attn_lstm import AttnLSTMForSeqToSeq
 from .seq2seq_attn_rnn import AttnRNNForSeqToSeq
-from .seq2seq_task_gru import SeqToSeqTaskGRU
-from .seq2seq_task_lstm import SeqToSeqTaskLSTM
-from .seq2seq_task_rnn import SeqToSeqTaskRNN
+from .seq2seq_task_gru import GRUForSeqToSeq
+from .seq2seq_task_lstm import LSTMForSeqToSeq
+from .seq2seq_task_rnn import RNNForSeqToSeq
 from .seq_encoder import SeqEncoder
 from .seq_decoder import SeqDecoder
 from .unet4layers4sem import Standard4LayersUNetClassification
@@ -65,9 +65,9 @@ __all__ = [
     "AttnGRUForSeqToSeq",
     "AttnLSTMForSeqToSeq",
     "AttnRNNForSeqToSeq",
-    "SeqToSeqTaskGRU",
-    "SeqToSeqTaskLSTM",
-    "SeqToSeqTaskRNN",
+    "GRUForSeqToSeq",
+    "LSTMForSeqToSeq",
+    "RNNForSeqToSeq",
     "SeqEncoder",
     "SeqDecoder",
     "Standard4LayersUNetClassification",

@@ -11,7 +11,7 @@ from pathlib import Path
 from torch import (Tensor, device, nn,
                    zeros,
                    save, load)
-from typing import final, Literal
+from typing import final, Literal, Final
 
 WIDTH: int = 64
 
@@ -48,11 +48,11 @@ class BaseSeqNet(ABC, nn.Module):
         self._C: int = num_layers  # RNN layers count
         self._dropout: float = dropout_rate
         self._bid: bool = bidirectional
-        self._accelerator: str = accelerator
-        self._PAD_SRC: int = PAD_SRC
-        self._PAD_TGT: int = PAD_TGT
-        self._SOS: int = SOS
-        self._EOS: int = EOS
+        self._accelerator: str = accelerator.lower()
+        self._PAD_SRC: Final[int] = PAD_SRC
+        self._PAD_TGT: Final[int] = PAD_TGT
+        self._SOS: Final[int] = SOS
+        self._EOS: Final[int] = EOS
 
         self._num_directions: int = self._set_num_directions(self._bid)
 

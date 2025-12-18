@@ -17,23 +17,25 @@ and general data processing tasks.
 Main Categories:
 + apis: API wrappers for OpenAI and DeepSeek
 + decorator: Performance measurement and timing (timer, Timer)
-+ helper: Text formatting and highlighting utilities
-+ Logger: structured log logs
-+ nlp: Chinese/English text processing and tokenization
-+ PT: PyTorch tensor operations and device management
-+ SQL: SQL queries and database management
-+ stats: Statistical data processing and analysis, File I/O operations (CSV, JSON, text), and data standardization and dimensionality reduction
++ helper: Text formatting, timing, and I/O utilities
++ highlighter: Terminal text coloring and formatting functions
++ Logger: Structured logging system
++ NLTK: Natural Language Toolkit tokenizer wrapper
++ nlp: Chinese/English text processing, tokenization, and vocabulary utilities
++ PT: PyTorch tensor operations, device management, and network verification
++ SQL: SQLite database management
++ stats: Statistical analysis, data preprocessing, file I/O, and dimensionality reduction
 + THU: Chinese word segmentation with THULAC
 
 Usage:
 + Direct import of utility functions or classes via:
-    - from src.utils import read_file, check_device, CONFIG4CNN, etc.
+    - from src.utils import read_file, check_device, record_log, etc.
 + Access default configurations or create custom instances as needed.
 ****************************************************************
 """
 
 __author__ = "Shawn Yu"
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 from .apis import (OpenAITextCompleter, OpenAIImageCompleter,
                    DeepSeekCompleter)
@@ -54,7 +56,8 @@ from .PT import (TorchRandomSeed,
                  check_device, get_device,
                  item2tensor, sequences2tensors,
                  balance_imbalanced_weights,
-                 TensorLogWriter)
+                 TensorLogWriter,
+                 verify_seq_net_initialisation)
 from .SQL import SQLiteIII
 from .stats import (NumpyRandomSeed,
                     load_csv, load_text, summary_dataframe,
@@ -95,6 +98,7 @@ __all__ = [
     "item2tensor", "sequences2tensors",
     "balance_imbalanced_weights",
     "TensorLogWriter",
+    "verify_seq_net_initialisation",
 
     "SQLiteIII",
 

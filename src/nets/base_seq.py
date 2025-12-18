@@ -105,32 +105,22 @@ class BaseSeqNet(ABC, nn.Module):
     def init_weights(self) -> None:
         """ Initialize model weights with appropriate schemes """
         for name, param in self.named_parameters():
-            # Only initialize parameters that require gradients
-            if param.requires_grad:
-                # Initialise RNN/LSTM/GRU weights and biases
-                if "weight_ih" in name:
-                    nn.init.xavier_uniform_(param)
-                elif "weight_hh" in name:
-                    nn.init.orthogonal_(param)
-                elif "bias" in name:
-                    # LSTM forget gate bias initialization to 1.0 for better performance
-                    if param.dim() == 1 and param.shape[0] >= 4 * self.hidden_size:
-                        # LSTM forget gate bias
-                        start = self.hidden_size
-                        end = 2 * self.hidden_size
-                        param.data[start:end].fill_(1.0)
-                    else:
-                        # Other biases are initialized to zero
-                        nn.init.zeros_(param)
-                elif "weight" in name and param.dim() > 1:
-                    # Other weight matrices
-                    nn.init.xavier_uniform_(param)
-                elif "embedding" in name:
-                    # Embedding layers
-                    nn.init.normal_(param, mean=0.0, std=0.01)
-            else:
-                # Parameters that do not require gradients are left unchanged
+            if not param.requires_grad:
                 continue
+
+            if param.dim() == 2 and any(key in name for key in ["embed", "embedder", ]):
+                nn.init.normal_(param, mean=0.0, std=0.01)
+
+            elif "weight_ih" in name:
+                nn.init.xavier_uniform_(param)
+            elif "weight_hh" in name:
+                nn.init.orthogonal_(param)
+
+            elif "bias" in name:
+                nn.init.zeros_(param)
+
+            elif "weight" in name and param.dim() > 1:
+                nn.init.xavier_uniform_(param)
 
     @final
     def init_hidden(self, batch_size: int) -> Tensor:

@@ -6,11 +6,12 @@
 # @File     :   seq2seq_task_lstm.py
 # @Desc     :   
 
+from math import log
 from random import choice
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
-                   tensor, topk, log,
+                   tensor, topk,
                    randint)
 from typing import override, Literal
 
@@ -20,7 +21,7 @@ from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 
 
-class SeqToSeqTaskLSTM(BaseSeqNet):
+class LSTMForSeqToSeq(BaseSeqNet):
     """ Sequence-to-Sequence LSTM Network for Sequence Tasks """
 
     def __init__(self,
@@ -268,7 +269,7 @@ if __name__ == "__main__":
         SeqMergeMethods.SUM
     ]
 
-    model = SeqToSeqTaskLSTM(
+    model = LSTMForSeqToSeq(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

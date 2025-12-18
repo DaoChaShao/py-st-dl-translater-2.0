@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 from src.configs.cfg_rnn import CONFIG4RNN
 from src.configs.cfg_types import Languages, Tokens, SeqMergeMethods, SeqStrategies
-from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
+from src.nets.seq2seq_task_gru import GRUForSeqToSeq
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines, green
 from src.utils.NLTK import bleu_score
@@ -95,7 +95,7 @@ def main() -> None:
             print(f"Model {green(params.name)} Exists!")
 
             # Set up a model and load saved parameters
-            model = SeqToSeqTaskGRU(
+            model = GRUForSeqToSeq(
                 vocab_size_src=len(dictionary_cn),
                 vocab_size_tgt=len(dictionary_en),
                 embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,

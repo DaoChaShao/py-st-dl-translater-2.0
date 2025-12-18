@@ -13,7 +13,7 @@ from src.configs.cfg_rnn import CONFIG4RNN
 from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethods
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
-from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
+from src.nets.seq2seq_task_gru import GRUForSeqToSeq
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
 
@@ -43,7 +43,7 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        model = SeqToSeqTaskGRU(
+        model = GRUForSeqToSeq(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -56,7 +56,7 @@ def main() -> None:
             PAD_TGT=dictionary_en[Tokens.PAD],
             SOS=dictionary_cn[Tokens.SOS],
             EOS=dictionary_cn[Tokens.EOS],
-            merge_method=SeqMergeMethods.AVERAGE,
+            merge_method=SeqMergeMethods.MEAN,
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -106,11 +106,9 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.AVERAGE}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.MEAN}",
         )
         """
-        "epoch": 50/100, "strategy": "beam", "type": "concat", "bleu": 0.17304417490959167, "rouge": 0.5309731960296631,
-        "epoch": 79/100, "strategy": "beam", "type": "average", "bleu": 0.12595288455486298, "rouge": 0.4930764138698578,
         """
 
 

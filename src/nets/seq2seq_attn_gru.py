@@ -18,7 +18,7 @@ from src.nets.attention_multi import MultiHeadAttention
 from src.nets.attention_single import SingleHeadAttention
 # ---
 
-from src.configs.cfg_types import Attentions, SeqMergeMethods
+from src.configs.cfg_types import AttnScorer, SeqMergeMethods
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
@@ -26,7 +26,7 @@ from src.utils.PT import TorchRandomSeed
 from src.utils.highlighter import starts, lines
 
 
-class AttentionGRUForSeqToSeq(BaseSeqNet):
+class AttnGRUForSeqToSeq(BaseSeqNet):
     """ Sequence-to-Sequence GRU Network for Sequence Tasks """
 
     def __init__(self,
@@ -38,7 +38,7 @@ class AttentionGRUForSeqToSeq(BaseSeqNet):
                  merge_method: str | SeqMergeMethods | Literal["concat", "max", "mean", "sum"] = "mean",
                  # Attentional parameters (not used in GRU but reserved for future use)
                  use_attention: bool = False,
-                 attention_method: str | Attentions | Literal["dot", "general", "concat"] = "dot",
+                 attention_method: str | AttnScorer | Literal["dot", "general", "concat"] = "dot",
                  attention_type: str | Literal["single", "multi"] = "single",
                  head_num: int = 8,
                  # ---
@@ -82,7 +82,7 @@ class AttentionGRUForSeqToSeq(BaseSeqNet):
 
         # Attention parameters (not used in GRU but reserved for future use)
         self._use_attention: bool = use_attention
-        self._attention_method: str | Attentions = attention_method.lower()
+        self._attention_method: str | AttnScorer = attention_method.lower()
         # self._attention_method: str = "concat"
         self._attention_type: str = attention_type.lower()
         # ---
@@ -398,7 +398,7 @@ class AttentionGRUForSeqToSeq(BaseSeqNet):
 
 if __name__ == "__main__":
     with TorchRandomSeed("Test"):
-        model = AttentionGRUForSeqToSeq(
+        model = AttnGRUForSeqToSeq(
             vocab_size_src=80,
             vocab_size_tgt=100,
             embedding_dim=65,
@@ -408,7 +408,7 @@ if __name__ == "__main__":
             merge_method="mean",
             use_attention=True,
             attention_method="concat",
-            attention_type="multi",
+            attention_type="single",
         )
 
         batch_size = 4

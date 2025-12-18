@@ -6,11 +6,11 @@
 # @File     :   seq2seq_attn_lstm.py
 # @Desc     :   
 
-
+from math import log
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
-                   tensor, topk, log,
+                   tensor, topk,
                    randint)
 from typing import override, final
 
@@ -303,7 +303,7 @@ class AttnLSTMForSeqToSeq(BaseSeqNet):
             # Initialize beams
             beams = [{
                 "tokens": [self._SOS],
-                "score": tensor(0.0, device=accelerator),
+                "score": 0.0,
                 "hidden": batch_hidden,
                 "finished": False
             }]
@@ -330,7 +330,7 @@ class AttnLSTMForSeqToSeq(BaseSeqNet):
 
                         new_beam = {
                             "tokens": beam["tokens"] + [token],
-                            "score": beam["score"] + log(tensor(token_prob + 1e-10, device=accelerator)),
+                            "score": beam["score"] + log(token_prob + 1e-10),
                             "hidden": new_hidden,
                             "finished": (token == self._EOS)
                         }

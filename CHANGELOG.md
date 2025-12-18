@@ -1,10 +1,22 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-16)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-18)
 
 ### Features
 
+- add trainer4attn.py for attention-based Seq2Seq training ([2839624](https://github.com///commit/28396244a576756e05425ad1762416a71b925aea))
+- add attention mechanisms to module description and imports in __init__.py ([c6ca047](https://github.com///commit/c6ca0478dcce8bfe99d1a2dacf256cc03dfcf23c))
+- update merge method to AVERAGE and adjust parameter counts in trainer.py ([12a1af6](https://github.com///commit/12a1af6b486494aaf4eec1e7e746eab6d01d1f5c))
+- update SeqEncoder to ensure consistent return types and add test cases ([1ee8b02](https://github.com///commit/1ee8b024a78e10de4a14dff0810f7e1ce0a4dbda))
+- enhance SeqDecoder with flexible net_category and consistent return types ([2f256d1](https://github.com///commit/2f256d12711897abccaaee5dd5f9a7aeac7f729d))
+- update _merge_bidirectional_hidden method to return tuple for hidden states ([78f3777](https://github.com///commit/78f3777e049b5286dac942c05bda97fd307d9778))
+- enhance AttentionGRUForSeqToSeq with attention mechanism and type hints ([f2453c8](https://github.com///commit/f2453c83c203c3f5786247489c7744e4d448d5a9))
+- update predictor to use SeqToSeqTaskGRU and CONCATENATE merge method ([0b07a65](https://github.com///commit/0b07a65b9a477f2206b6130c956a6253aae0934b))
+- update evaluator to use SeqToSeqTaskGRU and CONCATENATE merge method ([dc7938f](https://github.com///commit/dc7938f9a22b01a8199c24dc4d5f844b755c2d42))
+- update model paths to reflect CONCATENATE merge method in cfg_base.py ([0744dc5](https://github.com///commit/0744dc57b30ec87a284898312060653e06c2f6e6))
+- update type hints for accelerator and hidden state parameters in base_seq.py ([6b26b52](https://github.com///commit/6b26b5293a1a10a776f15b14e6ee5bbaf227d91a))
+- refactor SingleHeadAttention to separate encoder and decoder hidden sizes ([8a3fcfe](https://github.com///commit/8a3fcfe2eef7cf5d90b317f5fc74d1570376a6d9))
 - rename vocab_size4output to vocab_size_tgt for clarity in trainer4seq2seq.py ([1578e58](https://github.com///commit/1578e580fb8ab0d1aaab28297fffe1e6cea0fec2))
 - update trainer to use SeqToSeqTaskGRU model and support CONCATENATE merge method ([be22fb7](https://github.com///commit/be22fb751b5e0564f7fbd6d6a9f109897e2a4db9))
 - update merge_method type to support SeqMergeMethods in seq2seq_task_rnn.py ([bbe6a56](https://github.com///commit/bbe6a56269ba130de56523b0af65b67eec963c14))
@@ -115,6 +127,13 @@
 
 ### Bug Fixes
 
+- enhance type hints in multi_task_rnn.py to support Literal types for accelerator and task ([2cbb829](https://github.com///commit/2cbb829dd09727756da4461a35937bec01580472))
+- enhance type hints in multi_task_lstm.py to support Literal types for accelerator and task ([979815f](https://github.com///commit/979815f3779812ba02c033397c707536352adabf))
+- enhance type hints in multi_task_gru.py to support Literal types for accelerator and task ([6687c66](https://github.com///commit/6687c66965fda9eb0aee60e3598f041a0b41d3a7))
+- enhance type hints and ensure accelerator is lowercase in base_seq.py ([5688883](https://github.com///commit/56888830a54244ca2a158182697ef1d02f8bae74))
+- update base_rnn.py to enhance type hints and ensure accelerator is lowercase ([416a152](https://github.com///commit/416a1521a34f78bbe57a27fcc78169933f4649b3))
+- update attention_single.py to use AttnScorer and comment out debug print statements ([1e3d0e8](https://github.com///commit/1e3d0e8ddb314cf7969d1c4934da3cd01f2071c2))
+- correct spelling in module description and update type imports in __init__.py ([bc57ab6](https://github.com///commit/bc57ab6a23c50c1d85ed9b34d76a4c2fca509b85))
 - update configuration categories and version in __init__.py ([6ecb6cb](https://github.com///commit/6ecb6cbc7685efbbd0ff765533fb53f9840662bb))
 - update import statements in trainer.py for consistency with renamed enumeration classes ([16dd723](https://github.com///commit/16dd72348dcef1ae21d232ef2d990ea516e9b577))
 - update import statements in predictor.py for consistency with renamed enumeration classes ([00af5f2](https://github.com///commit/00af5f204b2b20e68f38e25d7739aa0d3ebfea13))
@@ -130,12 +149,27 @@
 
 ### Docs
 
-- update CHANGELOG.md with recent renaming and feature additions ([5ae6891](https://github.com///commit/5ae6891cbe9c8a4e44c2bfd86953ec1583de3167))
+- update CHANGELOG.md with recent renaming and feature additions ([1fa1cf8](https://github.com///commit/1fa1cf85237e5940993e64d204da12eba18f1e92))
 - update CHANGELOG.md with recent feature additions and bug fixes ([505c6f3](https://github.com///commit/505c6f306c04a0e5419d623218047e52e34af6c3))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring
 
+- update type hints in trainer.py for clarity and consistency ([08d2404](https://github.com///commit/08d2404143e90866f35ce1d1a107634efdabcd3a))
+- update type hints and net category in seq_encoder.py for clarity and consistency ([c43fc76](https://github.com///commit/c43fc76f6548bd56787e3922aba5d515d7a6ebb0))
+- update type hints and constants in seq_decoder.py for clarity and consistency ([f4161ae](https://github.com///commit/f4161ae5dd75d9c0f4afa022cba8c14373fadb67))
+- enhance type hints and merge method handling in SeqToSeqTaskRNN for clarity and consistency ([dd30117](https://github.com///commit/dd30117f25928988ef376c9d2e3e3574d5172061))
+- enhance type hints and merge method handling in SeqToSeqTaskLSTM for clarity and consistency ([571ca9b](https://github.com///commit/571ca9be81a1ebeb43e619aa397e5c03677b1d30))
+- update type hints and merge method handling in SeqToSeqTaskGRU for clarity and consistency ([0c7e45e](https://github.com///commit/0c7e45ed06c5175a9e2688257db221d30af61748))
+- rename Attention class and types for clarity in seq2seq_attn_rnn.py ([3812959](https://github.com///commit/3812959f2f734111dbae2267fdaf6f7d6569def2))
+- rename Attention types for clarity in seq2seq_attn_lstm.py ([2c11b6a](https://github.com///commit/2c11b6a7287a150d56884c6d0107dd0081f3ac35))
+- rename AttentionGRUForSeqToSeq and update attention method type hints for clarity ([42c160d](https://github.com///commit/42c160db616d322b94f096a739619b4ee94f8b4d))
+- improve parameter naming and type hints in seq2seq.py for clarity and consistency ([e1135fa](https://github.com///commit/e1135faf04826a13e26213fb3824d65547069594))
+- rename Langs to Languages for consistency in processor.py ([5e159f4](https://github.com///commit/5e159f4278a27bc7bf4c5e02d5f0ded4230d3697))
+- rename Langs and Seq2SeqStrategies for clarity in predictor.py ([690d6f3](https://github.com///commit/690d6f34c300a9d9d8ca5ec2b8ca6307993931e3))
+- rename enums for clarity in prediction.py ([1ac829e](https://github.com///commit/1ac829ea5c4a0c59f4e12b6a059a568bb8dda852))
+- update enum names for consistency in evaluator.py ([4f883fb](https://github.com///commit/4f883fbf468dd4a3688b793b8cc512528c8d6cfe))
+- rename enums for clarity and consistency in cfg_types.py ([2ef36cc](https://github.com///commit/2ef36cc195a7b41c286a7a4cd6876493bd9323e1))
 - update Lang to Langs in processor.py for consistency ([fab03db](https://github.com///commit/fab03db045454a1def4c27d017ec4b4aeae019f5))
 - simplify constructor call in multi_task_rnn.py ([d4815a2](https://github.com///commit/d4815a29cec310b7e477fe7926cf17e5d7523633))
 - simplify constructor call in multi_task_lstm.py ([b694cc6](https://github.com///commit/b694cc6261e6a0d10cd4d5b19297600253937d88))

@@ -15,7 +15,7 @@ from streamlit import (empty, sidebar, subheader, session_state,
 from torch import load, device, Tensor, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Langs, Tokens, Seq2SeqNets, Seq2SeqStrategies
+from src.configs.cfg_types import Languages, Tokens, SeqNets, SeqStrategies
 from src.nets.seq2seq import SeqToSeqCoder
 from src.utils.helper import Timer
 from src.utils.NLTK import bleu_score
@@ -109,14 +109,14 @@ with sidebar:
             # Set model selection
             model: str = selectbox(
                 "Select a Model",
-                options=[Seq2SeqNets.RNN, Seq2SeqNets.LSTM, Seq2SeqNets.GRU], index=2,
+                options=[SeqNets.RNN, SeqNets.LSTM, SeqNets.GRU], index=2,
                 disabled=True, width="stretch"
             )
             caption(f"You selected **{model}** for translation.")
             # Set strategy selection
             selection: str = selectbox(
                 "Select a Strategy to translate",
-                options=[Seq2SeqStrategies.GREEDY, Seq2SeqStrategies.BEAM_SEARCH], index=0,
+                options=[SeqStrategies.GREEDY, SeqStrategies.BEAM_SEARCH], index=0,
                 width="stretch"
             )
             caption(f"You selected **{selection} search** strategy for translation.")
@@ -134,12 +134,12 @@ with sidebar:
                         bid=True,
                         pad_idx4input=dictionary_cn[Tokens.PAD],
                         pad_idx4output=dictionary_en[Tokens.PAD],
-                        net_category=Seq2SeqNets.GRU,
+                        net_category=SeqNets.GRU,
                         SOS=dictionary_cn[Tokens.SOS],
                         EOS=dictionary_en[Tokens.EOS],
                     )
                     dict_state: dict = load(
-                        params4greedy if selection == Seq2SeqStrategies.GREEDY else params4beam,
+                        params4greedy if selection == SeqStrategies.GREEDY else params4beam,
                         map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR)
                     )
                     session_state["model"].load_state_dict(dict_state)
@@ -162,20 +162,20 @@ with sidebar:
                         session_state["cn4prove"]: list[str] = [c for _, c in data]
                         en4prove: list[str] = [e for e, _ in data]
                         if amount is None:
-                            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Languages.CN, batches=batches, strict=False) as tokeniser:
                                 session_state["cn_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     session_state["cn4prove"], streamlit_bar=True
                                 )
-                            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Languages.EN, batches=batches, strict=False) as tokeniser:
                                 session_state["en_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     en4prove, streamlit_bar=True
                                 )
                         else:
-                            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Languages.CN, batches=batches, strict=False) as tokeniser:
                                 session_state["cn_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     session_state["cn4prove"][:amount], streamlit_bar=True
                                 )
-                            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
+                            with SpaCyBatchTokeniser(Languages.EN, batches=batches, strict=False) as tokeniser:
                                 session_state["en_items"]: list[list[str]] = tokeniser.batch_tokenise(
                                     en4prove[:amount], streamlit_bar=True
                                 )

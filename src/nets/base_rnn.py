@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from torch import (Tensor, nn, zeros,
                    save, load)
-from typing import final
+from typing import final, Literal, Final
 
 WIDTH: int = 64
 
@@ -22,7 +22,7 @@ class BaseRNN(ABC, nn.Module):
                  vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int,
                  *,
                  dropout_rate: float = 0.3, bidirectional: bool = True,
-                 accelerator: str = "cpu",
+                 accelerator: str | Literal["cuda", "cpu"] = "cpu",
                  PAD: int = 0
                  ) -> None:
         super().__init__()
@@ -43,9 +43,9 @@ class BaseRNN(ABC, nn.Module):
 
         self._dropout: float = dropout_rate
         self._bid: bool = bidirectional
-        self._accelerator: str = accelerator
+        self._accelerator: str = accelerator.lower()
 
-        self._PAD: int = PAD
+        self._PAD: Final[int] = PAD
         self._num_directions: int = self._set_num_directions(self._bid)
 
         self._embed: nn.Embedding = nn.Embedding(self._L, self._H, padding_idx=self._PAD)

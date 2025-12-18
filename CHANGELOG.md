@@ -127,6 +127,9 @@
 
 ### Bug Fixes
 
+- remove tensor conversion in beam search scoring and rename model class for consistency ([0848a5c](https://github.com///commit/0848a5cc1d732d1d49dfa434d6738fa15822f075))
+- remove unnecessary tensor conversion in beam search scoring ([fe6a464](https://github.com///commit/fe6a464bd86dbd17998a3b1d5e29cccba6b17336))
+- simplify log calculation in beam search scoring ([4bc48bd](https://github.com///commit/4bc48bd49ddd598f88cba14b4952100d26df3d35))
 - enhance type hints in multi_task_rnn.py to support Literal types for accelerator and task ([2cbb829](https://github.com///commit/2cbb829dd09727756da4461a35937bec01580472))
 - enhance type hints in multi_task_lstm.py to support Literal types for accelerator and task ([979815f](https://github.com///commit/979815f3779812ba02c033397c707536352adabf))
 - enhance type hints in multi_task_gru.py to support Literal types for accelerator and task ([6687c66](https://github.com///commit/6687c66965fda9eb0aee60e3598f041a0b41d3a7))
@@ -149,12 +152,18 @@
 
 ### Docs
 
+- update CHANGELOG.md with recent feature additions and bug fixes ([8e088cf](https://github.com///commit/8e088cfa4c335b1191dce8d6abf007b9159116d4))
 - update CHANGELOG.md with recent renaming and feature additions ([1fa1cf8](https://github.com///commit/1fa1cf85237e5940993e64d204da12eba18f1e92))
-- update CHANGELOG.md with recent feature additions and bug fixes ([505c6f3](https://github.com///commit/505c6f306c04a0e5419d623218047e52e34af6c3))
 - update CHANGELOG.md with recent feature additions ([21db193](https://github.com///commit/21db193147a8b8afc8730b1cc66f0434cc7ce2b8))
 
 ### Code Refactoring
 
+- rename SeqToSeqTaskGRU to GRUForSeqToSeq for clarity and update merge method in training configuration ([d992b9d](https://github.com///commit/d992b9db75630b4a70631179f405cc8406b928af))
+- rename SeqToSeqTaskRNN to RNNForSeqToSeq for clarity and update type hint for strategy parameter ([47c1ec2](https://github.com///commit/47c1ec2ca8ab77b51e0a1d25a8f87aef012497aa))
+- rename SeqToSeqTaskLSTM to LSTMForSeqToSeq for clarity ([195f911](https://github.com///commit/195f9114ab4ef72fe38e55e297fdb143fe40d885))
+- rename SeqToSeqTaskGRU to GRUForSeqToSeq for clarity and remove unused log import ([cbe7b0b](https://github.com///commit/cbe7b0bd2f602548a4bebb149ae65b366176b081))
+- rename SeqToSeqTask classes for clarity ([a000e3f](https://github.com///commit/a000e3f5f719c636186d201568b33e4d6a6f4ff8))
+- rename SeqToSeqTaskGRU to GRUForSeqToSeq for clarity ([c59c822](https://github.com///commit/c59c822b235141c5cf188a056654208202342660))
 - update type hints in trainer.py for clarity and consistency ([08d2404](https://github.com///commit/08d2404143e90866f35ce1d1a107634efdabcd3a))
 - update type hints and net category in seq_encoder.py for clarity and consistency ([c43fc76](https://github.com///commit/c43fc76f6548bd56787e3922aba5d515d7a6ebb0))
 - update type hints and constants in seq_decoder.py for clarity and consistency ([f4161ae](https://github.com///commit/f4161ae5dd75d9c0f4afa022cba8c14373fadb67))

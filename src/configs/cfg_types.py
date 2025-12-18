@@ -7,33 +7,37 @@
 # @Desc     :   
 
 from enum import StrEnum, unique
-from pathlib import Path
-
-from src.configs.cfg_base import CONFIG
-from src.utils.stats import load_json
 
 
 @unique
-class Attentions(StrEnum):
+class AttnHeads(StrEnum):
+    SINGLE = "single"
+    MULTI = "multi"
+
+
+@unique
+class AttnScorer(StrEnum):
+    CONCAT = "concat"
     DOT_PRODUCT = "dot"
     GENERAL = "general"
-    CONCATENATION = "concat"
 
 
 @unique
-class Langs(StrEnum):
+class Languages(StrEnum):
     CN = "cn"
     EN = "en"
 
 
 @unique
 class SeqMergeMethods(StrEnum):
-    AVERAGE = "average"
-    CONCATENATE = "concat"
+    CONCAT = "concat"
+    MAX = "max"
+    MEAN = "mean"
+    SUM = "sum"
 
 
 @unique
-class Seq2SeqNets(StrEnum):
+class SeqNets(StrEnum):
     RNN = "rnn"
     LSTM = "lstm"
     GRU = "gru"
@@ -41,7 +45,7 @@ class Seq2SeqNets(StrEnum):
 
 
 @unique
-class Seq2SeqStrategies(StrEnum):
+class SeqStrategies(StrEnum):
     GREEDY = "greedy"
     BEAM_SEARCH = "beam"
 
@@ -63,16 +67,12 @@ class Tokens(StrEnum):
 
 
 @unique
-class TSSeqSeparate(StrEnum):
+class SeqSeparator(StrEnum):
     SEQ2ONE = "seq2one"
     SEQ2SEQ = "seq2seq"
     SEQ_SLICE = "slice"
 
 
 if __name__ == "__main__":
-    out = TSSeqSeparate.SEQ2ONE
+    out = SeqSeparator.SEQ2ONE
     print(out)
-
-    dic: Path = Path(CONFIG.FILEPATHS.DICTIONARY)
-    dictionary: dict = load_json(dic)
-    print(dictionary[Tokens.PAD])

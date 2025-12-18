@@ -20,6 +20,7 @@ Main Categories:
 + MultiTask Models: Multi-task learning architectures (RNN, LSTM, GRU)
 + Seq2Seq Models: Encoder-decoder architectures for sequence-to-sequence tasks
 + SeqEncoder/SeqDecoder: Individual encoder and decoder components
++ Attention Mechanisms: Single and multi-head attention modules for enhanced sequence modeling
 + Standard4LayersUNetClassification: 4-layer UNet variant for semantic segmentation
 + Standard5LayersUNetForClassification: 5-layer UNet variant for semantic segmentation
 
@@ -41,6 +42,9 @@ from .multi_task_gru import MultiTaskGRU
 from .multi_task_lstm import MultiTaskLSTM
 from .multi_task_rnn import MultiTaskRNN
 from .seq2seq import SeqToSeqCoder
+from .seq2seq_attn_gru import AttnGRUForSeqToSeq
+from .seq2seq_attn_lstm import AttnLSTMForSeqToSeq
+from .seq2seq_attn_rnn import AttnRNNForSeqToSeq
 from .seq2seq_task_gru import SeqToSeqTaskGRU
 from .seq2seq_task_lstm import SeqToSeqTaskLSTM
 from .seq2seq_task_rnn import SeqToSeqTaskRNN
@@ -58,6 +62,9 @@ __all__ = [
     "MultiTaskLSTM",
     "MultiTaskRNN",
     "SeqToSeqCoder",
+    "AttnGRUForSeqToSeq",
+    "AttnLSTMForSeqToSeq",
+    "AttnRNNForSeqToSeq",
     "SeqToSeqTaskGRU",
     "SeqToSeqTaskLSTM",
     "SeqToSeqTaskRNN",

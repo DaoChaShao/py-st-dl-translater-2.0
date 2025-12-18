@@ -12,7 +12,7 @@ from random import randint
 from torch import Tensor, load, device, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Langs, Tokens, SeqMergeMethods, Seq2SeqStrategies
+from src.configs.cfg_types import Languages, Tokens, SeqMergeMethods, SeqStrategies
 from src.nets.seq2seq_task_gru import SeqToSeqTaskGRU
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines, red, green, blue
@@ -55,14 +55,14 @@ def main() -> None:
         en4prove: list[str] = [e for e, _ in data]
         assert len(cn4prove) == len(en4prove), "Chinese and English data length mismatch."
         if amount is None:
-            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Languages.CN, batches=batches, strict=False) as tokeniser:
                 cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4prove)
-            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Languages.EN, batches=batches, strict=False) as tokeniser:
                 en_items: list[list[str]] = tokeniser.batch_tokenise(en4prove)
         else:
-            with SpaCyBatchTokeniser(Langs.CN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Languages.CN, batches=batches, strict=False) as tokeniser:
                 cn_items: list[list[str]] = tokeniser.batch_tokenise(cn4prove[:amount])
-            with SpaCyBatchTokeniser(Langs.EN, batches=batches, strict=False) as tokeniser:
+            with SpaCyBatchTokeniser(Languages.EN, batches=batches, strict=False) as tokeniser:
                 en_items: list[list[str]] = tokeniser.batch_tokenise(en4prove[:amount])
         # print(cn_items[:3])
         # print(en_items[:3])
@@ -135,9 +135,9 @@ def main() -> None:
             # Prediction
             with no_grad():
                 strategy: str = (
-                    Seq2SeqStrategies.GREEDY
+                    SeqStrategies.GREEDY
                     if params.name.split(".")[0].split("-")[2] in str(CONFIG4RNN.FILEPATHS.TRAINED_NET_GREEDY)
-                    else Seq2SeqStrategies.BEAM_SEARCH
+                    else SeqStrategies.BEAM_SEARCH
                 )
 
                 out: Tensor = model.generate(src)

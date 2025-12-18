@@ -56,7 +56,7 @@ def main() -> None:
             PAD_TGT=dictionary_en[Tokens.PAD],
             SOS=dictionary_cn[Tokens.SOS],
             EOS=dictionary_cn[Tokens.EOS],
-            merge_method=SeqMergeMethods.MEAN,
+            merge_method=SeqMergeMethods.CONCAT,
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -96,7 +96,7 @@ def main() -> None:
             PAD=dictionary_en[Tokens.PAD],
             SOS=dictionary_en[Tokens.SOS],
             EOS=dictionary_en[Tokens.EOS],
-            decode_strategy=SeqStrategies.BEAM_SEARCH,
+            decode_strategy=SeqStrategies.GREEDY,
             beam_width=CONFIG4RNN.PARAMETERS.BEAM_SIZE,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
         )
@@ -106,9 +106,11 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.MEAN}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.GREEDY}-{SeqMergeMethods.CONCAT}",
         )
         """
+        "bid": True, "epoch": 74, "strategy": "beam", "merge": "mean", "bleu": 0.1235, "rouge": 0.4905,
+        "bid": True, "epoch": 74, "strategy": "greedy", "merge": "mean", "bleu": 0.1133, "rouge": 0.4758
         """
 
 

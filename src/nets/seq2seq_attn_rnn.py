@@ -299,7 +299,7 @@ class AttnRNNForSeqToSeq(BaseSeqNet):
             # Initialize beams
             beams = [{
                 "tokens": [self._SOS],
-                "score": tensor(0.0, device=accelerator),
+                "score": 0.0,
                 "hidden": batch_hidden,
                 "finished": False
             }]
@@ -326,7 +326,7 @@ class AttnRNNForSeqToSeq(BaseSeqNet):
 
                         new_beam = {
                             "tokens": beam["tokens"] + [token],
-                            "score": beam["score"] + log(tensor(token_prob + 1e-10, device=accelerator)),
+                            "score": beam["score"] + log(token_prob + 1e-10),
                             "hidden": new_hidden,
                             "finished": (token == self._EOS)
                         }
@@ -346,7 +346,7 @@ class AttnRNNForSeqToSeq(BaseSeqNet):
 
 
 if __name__ == "__main__":
-    model = AttentionRNNForSeqToSeq(
+    model = AttnRNNForSeqToSeq(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

@@ -133,6 +133,8 @@ def main() -> None:
         "bid": true, "epoch": 52/100, "strategy": "beam", "merge": "concat", "bleu": 0.1675, "rouge": 0.5293
         "bid": true, "epoch": 74/100, "strategy": "greedy", "merge": "mean", "bleu": 0.1133, "rouge": 0.4758
         "bid": true, "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139
+        ---
+        "bid": false, 
         """
 
 

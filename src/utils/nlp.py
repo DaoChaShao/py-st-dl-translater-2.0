@@ -13,6 +13,7 @@ from pandas import DataFrame
 from spacy import load
 from stqdm import stqdm
 from tqdm import tqdm
+from typing import Literal
 
 from src.configs.cfg_base import CONFIG
 from src.utils.decorator import timer
@@ -127,7 +128,7 @@ def select_bar(streamlit_bar: bool = False):
 class SpaCyBatchTokeniser:
     """ "" SpaCy NLP Processor for a batch of English texts or a single text """
 
-    def __init__(self, lang: str = "en", batches: int = 100, strict: bool = False) -> None:
+    def __init__(self, lang: str | Literal["cn", "en"] = "en", batches: int = 100, strict: bool = False) -> None:
         """ Initialize the SpaCy Batch Tokeniser
         :param lang: language code for the texts (default is 'en' for English, 'cn' for Chinese)
         :param batches: number of texts to process in each batch

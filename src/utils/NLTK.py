@@ -7,13 +7,14 @@
 # @Desc     :   
 
 from nltk.tokenize import TreebankWordTokenizer, TreebankWordDetokenizer
-from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu, corpus_bleu
+from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
+from typing import Literal, Any
 
 
 class NLTKTokenizer:
     """ NLTK Tokeniser """
 
-    def __init__(self, lang: str = "en", INV: bool = False) -> None:
+    def __init__(self, lang: str | Literal["cn", "en"] = "en", INV: bool = False) -> None:
         self._lang = lang
         self._INV = INV
         self._tokenizer = None
@@ -50,7 +51,7 @@ def bleu_score(reference: list[str], candidate: list[str], smooth: bool = True) 
     :return: BLEU score
     """
     if smooth:
-        chen_cherry = SmoothingFunction()
+        chen_cherry: Any = SmoothingFunction()
         """
         Smoothing method 1: Add epsilon counts to precision with 0 counts.
         ---

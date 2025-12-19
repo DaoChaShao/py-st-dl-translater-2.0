@@ -5,6 +5,7 @@
 
 ### Features
 
+- enable bidirectional support in SeqDecoder and update related logic ([0f51ac8](https://github.com///commit/0f51ac8c7d532898a1422312aee23d0de98db253))
 - add training log for true-gru-greedy-concat model ([c20d94a](https://github.com///commit/c20d94afa973a180c76773632fa7cfcd8f229c98))
 - add training log for true-gru-beam-concat model ([ebfc64f](https://github.com///commit/ebfc64fecdb7c1e66df30d37bfcd51a23ead2cf8))
 - add model-true-gru-greedy-concat.pth ([3705882](https://github.com///commit/37058829451eaa195599d52fadb6c80edffd5849))
@@ -146,6 +147,7 @@
 
 ### Bug Fixes
 
+- correct bidirectional flag in training log output ([cc6f011](https://github.com///commit/cc6f0117eff9d414468fe004d64a234a65453cab))
 - remove tensor conversion in beam search scoring and rename model class for consistency ([0848a5c](https://github.com///commit/0848a5cc1d732d1d49dfa434d6738fa15822f075))
 - remove unnecessary tensor conversion in beam search scoring ([fe6a464](https://github.com///commit/fe6a464bd86dbd17998a3b1d5e29cccba6b17336))
 - simplify log calculation in beam search scoring ([4bc48bd](https://github.com///commit/4bc48bd49ddd598f88cba14b4952100d26df3d35))
@@ -179,6 +181,7 @@
 
 ### Code Refactoring
 
+- simplify hidden size calculation in decoder initialization ([64fc24e](https://github.com///commit/64fc24e74e00f69c30b28f3621bfe0c05057e9ae))
 - clean up SQL.py by removing unnecessary import statement ([ff7f953](https://github.com///commit/ff7f953dcff295c6cffa7836672f869e58698bfc))
 - rename correlation functions for consistency ([b8c02be](https://github.com///commit/b8c02be12e6df9d99956d40160a61e6a8a5c4374))
 - simplify weight initialization logic in init_weights method ([278e4f5](https://github.com///commit/278e4f5f5853d620b42d0d328fe49d5912e1eb06))

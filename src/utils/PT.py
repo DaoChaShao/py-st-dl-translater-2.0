@@ -12,11 +12,13 @@ from pandas import DataFrame, Series
 from pathlib import Path
 from random import seed as rnd_seed, getstate, setstate
 from sklearn.utils.class_weight import compute_class_weight
+from time import perf_counter
 from torch import (cuda, backends, Tensor, tensor, float32, long,
                    manual_seed, get_rng_state, set_rng_state,
                    nn, unique, no_grad)
-from torch.utils.tensorboard import SummaryWriter
+from typing import Literal
 
+from torch.utils.tensorboard import SummaryWriter
 from src.utils.decorator import timer
 
 WIDTH: int = 64
@@ -25,10 +27,11 @@ WIDTH: int = 64
 class TorchRandomSeed:
     """ Setting random seed for reproducibility """
 
-    def __init__(self, description: str, seed: int = 27):
+    def __init__(self, description: str, seed: int = 27, tick_tock: bool = False) -> None:
         """ Initialise the RandomSeed class
         :param description: the description of a random seed
         :param seed: the seed value to be set
+        :param tick_tock: whether to print timing information
         """
         self._description: str = description
         self._seed: int = seed
@@ -36,8 +39,16 @@ class TorchRandomSeed:
         self._previous_pt_seed = None
         self._previous_np_seed = None
 
+        self._tick: bool = tick_tock
+        self._start: float = 0.0
+        self._end: float = 0.0
+        self._elapsed: float = 0.0
+
     def __enter__(self):
         """ Set the random seed """
+        if self._tick:
+            self._start = perf_counter()
+
         # Save the previous random seed state
         self._previous_py_seed = getstate()
         self._previous_pt_seed = get_rng_state()
@@ -49,7 +60,7 @@ class TorchRandomSeed:
         np_random.seed(self._seed)
 
         print("*" * WIDTH)
-        print(f"{self._description!r} has been set randomness {self._seed}.")
+        print(f"{self._description} has been set to {self._seed}.")
         print("-" * WIDTH)
 
         return self
@@ -64,14 +75,52 @@ class TorchRandomSeed:
         if self._previous_np_seed is not None:
             np_random.set_state(self._previous_np_seed)
 
+        # Calculate elapsed time if measuring
+        if self._tick:
+            self._end = perf_counter()
+            self._elapsed = self._end - self._start
+
         print("-" * WIDTH)
-        print(f"{self._description!r} has been restored to previous randomness.")
+        print(f"{self._description} has been restored to previous randomness.")
+        if self._tick:
+            elapsed_time: str = self._format_time(self._elapsed)
+            print(f"{self._description} took {elapsed_time}.")
         print("*" * WIDTH)
         print()
 
+        # Return False to propagate exceptions, True to suppress them
+        return False
+
+    @staticmethod
+    def _format_time(seconds: float) -> str:
+        """ Format time breakdown from seconds to days, hours, minutes, and seconds
+        :param seconds: time in seconds
+        :return: formatted time breakdown string
+        """
+        days: int = int(seconds // 86400)
+        hours: int = int((seconds % 86400) // 3600)
+        minutes: int = int((seconds % 3600) // 60)
+        secs: float = seconds % 60
+
+        parts: list[str] = []
+        if days > 0:
+            parts.append(f"{days} days")
+        if hours > 0:
+            parts.append(f"{hours} hours")
+        if minutes > 0:
+            parts.append(f"{minutes} minutes")
+        if secs > 0 or not parts:
+            parts.append(f"{secs:.2f} seconds")
+
+        return " ".join(parts)
+
     def __repr__(self):
         """ Return a string representation of the random seed """
-        return f"{self._description!r} is set to randomness {self._seed}."
+        base: str = f"TorchRandomSeed({self._description}, seed={self._seed})"
+        if self._tick and self._elapsed > 0.0:
+            base += f", Elapsed Time: {self._elapsed:.2f} s"
+
+        return base
 
 
 @timer
@@ -100,7 +149,7 @@ def check_device() -> None:
 
 
 @timer
-def get_device(accelerator: str = "auto", cuda_mode: int = 0) -> str:
+def get_device(accelerator: str | Literal["auto", "cuda", "cpu"] = "auto", cuda_mode: int = 0) -> str:
     """ Get the appropriate device based on the target device string
     :param accelerator: the target device string ("auto", "cuda", "mps", "cpu")
     :param cuda_mode: the CUDA device index to use (if applicable)
@@ -165,7 +214,7 @@ def get_device(accelerator: str = "auto", cuda_mode: int = 0) -> str:
 def item2tensor(
         data: DataFrame | ndarray | list | int | float | number,
         embedding: bool = False,
-        accelerator: str = "cpu", is_grad: bool = False
+        accelerator: str | Literal["cuda", "cpu"] = "cpu", is_grad: bool = False
 ) -> Tensor:
     """ Convert data to a PyTorch tensor
     :param data: data to be converted

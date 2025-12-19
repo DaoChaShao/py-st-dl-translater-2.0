@@ -5,6 +5,18 @@
 
 ### Features
 
+- add training log for true-gru-greedy-concat model ([c20d94a](https://github.com///commit/c20d94afa973a180c76773632fa7cfcd8f229c98))
+- add training log for true-gru-beam-concat model ([ebfc64f](https://github.com///commit/ebfc64fecdb7c1e66df30d37bfcd51a23ead2cf8))
+- add model-true-gru-greedy-concat.pth ([3705882](https://github.com///commit/37058829451eaa195599d52fadb6c80edffd5849))
+- add model-true-gru-beam-concat.pth ([f00d28f](https://github.com///commit/f00d28f5612a202e9ce63570543d64d34074cb33))
+- enhance trainer.py with bidirectional model summary and timing functionality for TorchRandomSeed ([96285bf](https://github.com///commit/96285bf11eddee0e3d67ecce2c5402c985fcd5f0))
+- enhance NumpyRandomSeed with timing functionality and improve type hinting for parameters ([f463bf5](https://github.com///commit/f463bf585659326338bcbf8f4c447fcf03e24d67))
+- enhance TorchRandomSeed with timing functionality and improve type hinting for get_device and item2tensor ([cdc0c4f](https://github.com///commit/cdc0c4f0fb251f314637ab14ddae54743c82f250))
+- update NLTKTokenizer to support Literal type for lang parameter and improve type hinting ([e57fb80](https://github.com///commit/e57fb8085f5f30e39032f7aefd02cd33c9cfe23d))
+- update SpaCyBatchTokeniser to support Literal type for lang parameter ([821cb7d](https://github.com///commit/821cb7d0af453c03b3b6df84b91e90c9cd87e56f))
+- update record_log function to support Literal type for mode parameter ([a915c03](https://github.com///commit/a915c03046fd76ecd66ccb39fca650a1b518cdad))
+- add timing functionality to RandomSeed context manager for performance measurement ([4b4f89b](https://github.com///commit/4b4f89bff5552de5833423a049afbaef49e1dc45))
+- enhance API key verification and update client method signatures for improved type safety ([6e95f3b](https://github.com///commit/6e95f3b3f5f86b68a681036c33fc8a092d4a0859))
 - update merge method to CONCAT and decode strategy to GREEDY in trainer ([7036461](https://github.com///commit/7036461c54de7e93bbd64c8c5a1422944564a7fd))
 - add training log for true-gru-greedy-mean model ([94e57ef](https://github.com///commit/94e57ef5fac8a35b0d8b1d6e2aeea29c157c6bfc))
 - add training log for true-gru-beam-mean model ([ed4ded3](https://github.com///commit/ed4ded307342680303fd68e60a0f7c9be1877fd7))
@@ -159,6 +171,7 @@
 
 ### Docs
 
+- update CHANGELOG.md for version 0.1.0 with recent feature additions ([a4aa465](https://github.com///commit/a4aa465e767b89046f3cb7ec079aabaac48e41bf))
 - update module documentation and improve category descriptions ([d9a4e44](https://github.com///commit/d9a4e443d7ce99509f58331f0a3732e8bfda204e))
 - update CHANGELOG.md with recent feature additions and bug fixes ([bd5e5ff](https://github.com///commit/bd5e5ff77afd530f0eb7a6b9c1afe099ecd14b8c))
 - update CHANGELOG.md with recent renaming and feature additions ([1fa1cf8](https://github.com///commit/1fa1cf85237e5940993e64d204da12eba18f1e92))
@@ -166,6 +179,8 @@
 
 ### Code Refactoring
 
+- clean up SQL.py by removing unnecessary import statement ([ff7f953](https://github.com///commit/ff7f953dcff295c6cffa7836672f869e58698bfc))
+- rename correlation functions for consistency ([b8c02be](https://github.com///commit/b8c02be12e6df9d99956d40160a61e6a8a5c4374))
 - simplify weight initialization logic in init_weights method ([278e4f5](https://github.com///commit/278e4f5f5853d620b42d0d328fe49d5912e1eb06))
 - streamline weight initialization logic in init_weights method ([e2a59fe](https://github.com///commit/e2a59fee78b20d922b5a09bebb970ec248510b59))
 - rename SeqToSeqTaskGRU to GRUForSeqToSeq for clarity and update merge method in training configuration ([d992b9d](https://github.com///commit/d992b9db75630b4a70631179f405cc8406b928af))

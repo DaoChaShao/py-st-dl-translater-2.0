@@ -5,7 +5,8 @@
 # @Version  :   Version 0.1.0
 # @File     :   SQL.py
 # @Desc     :
-import sqlite3
+
+
 from pathlib import Path
 from sqlite3 import connect
 

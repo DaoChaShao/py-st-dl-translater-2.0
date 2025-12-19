@@ -7,7 +7,6 @@
 # @Desc     :   
 
 from math import log
-from random import choice
 from torch import (Tensor, nn,
                    cat,
                    device, full, long, ones, bool as torch_bool, where, full_like, empty,
@@ -86,10 +85,11 @@ class GRUForSeqToSeq(BaseSeqNet):
         """ Initialize the decoder module
         :return: decoder module
         """
-        hidden_size = self._M * 2 if (self._bid and self._method == "concat") else self._M
+        hidden_size = self._M * 2 if self._bid and self._method == "concat" else self._M
+
         return SeqDecoder(
             self._vocab_tgt, self._H, hidden_size, self._C,
-            dropout_rate=self._dropout, bidirectional=False,
+            dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
             PAD=self._PAD_TGT, net_category="gru",
         )

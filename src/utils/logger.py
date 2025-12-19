@@ -13,11 +13,15 @@ from logging import (Logger, getLogger, INFO, WARNING, ERROR, CRITICAL, DEBUG,
                      Formatter)
 from pathlib import Path
 from random import randint, uniform
+from typing import Literal
 
 from src.configs.cfg_base import CONFIG
 
 
-def record_log(name: str, log_dir: str = str(CONFIG.FILEPATHS.LOGS), mode: str = "w", level: str = "info") -> Logger:
+def record_log(
+        name: str, log_dir: str = str(CONFIG.FILEPATHS.LOGS),
+        mode: str | Literal["a", "w"] = "w", level: str = "info"
+) -> Logger:
     """ Create a logger that records logs to a txt file
     :param name: name of the log file (without extension)
     :param log_dir: directory to save the log file

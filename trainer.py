@@ -25,7 +25,7 @@ def main() -> None:
     # Set up argument parser
     args = set_argument_parser()
 
-    with TorchRandomSeed("Chinese to English (Seq2Seq) Translation"):
+    with TorchRandomSeed("Chinese to English (Seq2Seq) Translation", tick_tock=True):
         # Get the dictionary
         dic_cn: Path = Path(CONFIG4RNN.FILEPATHS.DICTIONARY_CN)
         dictionary_cn = load_json(dic_cn) if dic_cn.exists() else print("Dictionary file not found.")
@@ -50,7 +50,7 @@ def main() -> None:
             hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
             num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
             dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-            bidirectional=True,
+            bidirectional=False,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
             PAD_SRC=dictionary_cn[Tokens.PAD],
             PAD_TGT=dictionary_en[Tokens.PAD],
@@ -65,7 +65,7 @@ def main() -> None:
         model.summary()
         """
         ****************************************************************
-        Model Summary for SeqToSeqTaskGRU
+        Model Summary for SeqToSeqTaskGRU (Bidirectional: True)
         ----------------------------------------------------------------
         - Source Vocabulary Size: 5235
         - Target Vocabulary Size: 3189
@@ -82,6 +82,26 @@ def main() -> None:
         ----------------------------------------------------------------
         Total parameters:         7,051,893
         Trainable parameters:     7,051,893
+        Non-trainable parameters: 0
+        ****************************************************************
+        ****************************************************************
+        Model Summary for GRUForSeqToSeq (Bidirectional: False)
+        ----------------------------------------------------------------
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          False
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         3,280,245
+        Trainable parameters:     3,280,245
         Non-trainable parameters: 0
         ****************************************************************
         """
@@ -109,8 +129,10 @@ def main() -> None:
             log_name=f"{SeqNets.GRU}-{SeqStrategies.GREEDY}-{SeqMergeMethods.CONCAT}",
         )
         """
-        "bid": True, "epoch": 74, "strategy": "beam", "merge": "mean", "bleu": 0.1235, "rouge": 0.4905,
-        "bid": True, "epoch": 74, "strategy": "greedy", "merge": "mean", "bleu": 0.1133, "rouge": 0.4758
+        "bid": true, "epoch": 74/100, "strategy": "beam", "merge": "mean", "bleu": 0.1235, "rouge": 0.4905,
+        "bid": true, "epoch": 52/100, "strategy": "beam", "merge": "concat", "bleu": 0.1675, "rouge": 0.5293
+        "bid": true, "epoch": 74/100, "strategy": "greedy", "merge": "mean", "bleu": 0.1133, "rouge": 0.4758
+        "bid": true, "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139
         """
 
 

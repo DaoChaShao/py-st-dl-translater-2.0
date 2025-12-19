@@ -66,8 +66,8 @@ from .stats import (NumpyRandomSeed,
                     save_json, load_json,
                     create_data_transformer, transform_data,
                     pca_importance,
-                    get_correlation_btw_features,
-                    get_categories_corr_ratio, get_correlation_btw_Xy)
+                    get_correlation_among_features,
+                    get_categories_corr_ratio, get_correlation_among_Xy)
 from .THU import THULACTokeniser
 
 __all__ = [
@@ -109,8 +109,8 @@ __all__ = [
     "save_json", "load_json",
     "create_data_transformer", "transform_data",
     "pca_importance",
-    "get_correlation_btw_features",
-    "get_categories_corr_ratio", "get_correlation_btw_Xy",
+    "get_correlation_among_features",
+    "get_categories_corr_ratio", "get_correlation_among_Xy",
 
     "THULACTokeniser",
 ]

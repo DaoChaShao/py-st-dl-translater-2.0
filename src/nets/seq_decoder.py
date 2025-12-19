@@ -17,7 +17,7 @@ from src.nets.seq_encoder import SeqEncoder
 class SeqDecoder(nn.Module):
     def __init__(self,
                  vocab_size: int, embedding_dim: int, hidden_size: int, num_layers: int,
-                 dropout_rate: float = 0.3, bidirectional: bool = False,
+                 dropout_rate: float = 0.3, bidirectional: bool = True,
                  accelerator: str | Literal["cuda", "cpu"] = "cpu", PAD: int = 0,
                  *,
                  net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = SeqNets.GRU,
@@ -39,18 +39,23 @@ class SeqDecoder(nn.Module):
         self._M: int = hidden_size  # Hidden dimension
         self._C: int = num_layers  # RNN layers count
         self._dropout: float = dropout_rate if num_layers > 1 else 0.0
-        self._bid: bool = bidirectional
+        self._num_directions: int = self._set_num_directions(bidirectional)
         self._accelerator: device = device(accelerator.lower())
         self._PAD: Final[int] = PAD
         self._type: str = net_category.lower()  # Network category
 
         self._embed = nn.Embedding(self._L, self._H, padding_idx=self._PAD)
         self._net = self._select_net(self._type)(
-            self._H, self._M, num_layers, batch_first=True,
+            self._H, self._M, num_layers,
+            batch_first=True, bidirectional=False,
             dropout=dropout_rate
         )
         self._drop = nn.Dropout(p=self._dropout)
         self._linear = nn.Linear(self._M, self._L)
+
+    @staticmethod
+    def _set_num_directions(bidirectional: bool) -> int:
+        return 2 if bidirectional else 1
 
     @staticmethod
     def _select_net(net_category: str) -> type:
@@ -89,26 +94,22 @@ class SeqDecoder(nn.Module):
         :param merge_method: method to combine bidirectional hidden states ('mean', 'max', 'sum', 'concat')
         :return: decoder initial hidden state [num_layers, batch_size, hidden_size] or
         """
-        if self._bid:
-            raise ValueError("Currently only supports decoder_bid=False")
-
         num_layers_times_num_directions, batches, hidden_size = hidden.shape
-        num_directions: int = 2
-        num_layers: int = num_layers_times_num_directions // num_directions
+        num_layers: int = num_layers_times_num_directions // self._num_directions
 
         # Reconstruct hidden state
         match merge_method.lower():
             case "mean":
-                return hidden.view(num_layers, num_directions, batches, hidden_size).mean(dim=1)
+                return hidden.view(num_layers, self._num_directions, batches, hidden_size).mean(dim=1)
             case "max":
-                return hidden.view(num_layers, num_directions, batches, hidden_size).max(dim=1).values
+                return hidden.view(num_layers, self._num_directions, batches, hidden_size).max(dim=1).values
             case "sum":
-                return hidden.view(num_layers, num_directions, batches, hidden_size).sum(dim=1)
+                return hidden.view(num_layers, self._num_directions, batches, hidden_size).sum(dim=1)
             case "concat":
                 # if merge_method="concat"，decoder hidden_size must double that of encoder
-                hn = hidden.view(num_layers, num_directions, batches, hidden_size)
+                hn = hidden.view(num_layers, self._num_directions, batches, hidden_size)
                 # Forward + Backward concatenation = 2 * hidden_size
-                return hn.transpose(1, 2).reshape(num_layers, batches, num_directions * hidden_size)
+                return hn.transpose(1, 2).reshape(num_layers, batches, self._num_directions * hidden_size)
             case _:
                 raise ValueError(f"Unsupported method: {self._method}")
 
@@ -122,14 +123,19 @@ if __name__ == "__main__":
     batch_size = 3
 
     # Initialise encoder
-    encoder_gru = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="gru")
-    encoder_lstm = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="lstm")
-    encoder_rnn = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="rnn")
+    bid: bool = False
+    encoder_gru = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="gru")
+    encoder_lstm = SeqEncoder(
+        vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="lstm"
+    )
+    encoder_rnn = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="rnn")
 
     # Initialise encoder
-    decoder_gru = SeqDecoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="gru")
-    decoder_lstm = SeqDecoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="lstm")
-    decoder_rnn = SeqDecoder(vocab_size, embedding_dim, hidden_size, num_layers, net_category="rnn")
+    decoder_gru = SeqDecoder(vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="gru")
+    decoder_lstm = SeqDecoder(
+        vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="lstm"
+    )
+    decoder_rnn = SeqDecoder(vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="rnn")
 
     # Input random sequence (batch_size, seq_len)
     src = randint(0, vocab_size, (batch_size, seq_len))

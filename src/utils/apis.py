@@ -8,21 +8,24 @@
 
 from base64 import b64decode
 from openai import OpenAI
+from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
+from typing import Literal
 
 
-def api_key_checker(api_key: str, category: str = "OpenAI") -> bool:
+def verify_api_key(api_key: str, category: str | Literal["openai", "deepseek"] = "openai") -> bool:
     """ Check the API key format
-            - The length of an OpenAI API key is 164-digit key
+    - The length of an OpenAI API key is 164-digit key
 
     :param api_key: enter the API key of the deepseek
     :param category: the category of the API key
     :return: True if the API key is valid
     """
     if api_key.startswith("sk-"):
-        if category == "OpenAI" and len(api_key) == 164:
+        if category == "openai" and len(api_key) == 164:
             return True
         elif category == "DeepSeek" and len(api_key) == 35:
             return True
+
     return False
 
 
@@ -30,15 +33,13 @@ class OpenAIEmbedder(object):
 
     def __init__(self, api_key: str) -> None:
         """ Initialize the OpenAI Embeddings API
-
         :param api_key: str: The API key for the OpenAI API
         """
         self._api_key = api_key
 
-    def client(self, prompt: list, model: str, dimensions: int = 1024) -> list:
+    def client(self, prompt: list, model: str, dimensions: int | Literal[256, 512, 1024] = 1024) -> list:
         """ Initialize the OpenAI Embeddings API
-                - dimensions: 256、512、1024、1536
-
+        - dimensions: 256、512、1024、1536、2048
         :param dimensions: int: The number of dimensions for the embedding
         :param model: str: The model to use for the embedding
         :param prompt: list: The input text to be embedded
@@ -70,9 +71,12 @@ class OpenAITextCompleter(object):
         self._temperature = temperature
         self._top_p = top_p
 
-    def client(self, content: str, prompt: str, model: str = "gpt-4.1-mini") -> str:
+    def client(self,
+               role: str, prompt: str,
+               model: str | Literal["gpt-4.1-mini",] = "gpt-4.1-mini"
+               ) -> str:
         """ Initialise the OpenAI Completion API
-        :param content: str: The input text to be completed
+        :param role: str: The input text to be completed
         :param prompt: str: The prompt to complete the input text
         :param model: str: The model to use for the completion
         :return: str: The completed text
@@ -80,8 +84,14 @@ class OpenAITextCompleter(object):
         client = OpenAI(api_key=self._api_key, base_url="https://api.openai.com/v1")
 
         messages = [
-            {"role": "system", "content": content},
-            {"role": "user", "content": prompt},
+            ChatCompletionSystemMessageParam(
+                role="system",
+                content=role
+            ),
+            ChatCompletionUserMessageParam(
+                role="user",
+                content=prompt
+            )
         ]
         completion = client.chat.completions.create(
             model=model,
@@ -105,24 +115,32 @@ class DeepSeekCompleter(object):
         self._api_key = api_key
         self._temperature = temperature
 
-    def client(self, content: str, prompt: str, model: str = "deepseek-chat") -> str:
+    def client(self, role: str, prompt: str, model: str = "deepseek-chat") -> str:
         """ Initialise the DeepSeek Completion API
-        :param content: str: The input text to be completed
+        :param role: str: The input text to be completed
         :param prompt: str: The prompt to complete the input text
         :param model: str: The model to use for the completion, default is "deepseek-chat-3.5"
         :return: str: The completed text
         """
         client = OpenAI(api_key=self._api_key, base_url="https://api.deepseek.com")
+
         messages = [
-            {"role": "system", "content": content},
-            {"role": "user", "content": prompt},
+            ChatCompletionSystemMessageParam(
+                role="system",
+                content=role
+            ),
+            ChatCompletionUserMessageParam(
+                role="user",
+                content=prompt
+            )
         ]
 
         response = client.chat.completions.create(
             model=model,
             messages=messages,
             temperature=self._temperature,
-            stream=False)
+            stream=False
+        )
 
         return response.choices[0].message.content
 
@@ -130,19 +148,23 @@ class DeepSeekCompleter(object):
 class OpenAIImageCompleter(object):
     """ OpenAI Image Generation API Wrapper """
 
-    def __init__(self, api_key: str, model: str = "dall-e-3", seed=None) -> None:
+    def __init__(self,
+                 api_key: str,
+                 model: str | Literal["dall-e-2", "dall-e-3", "gpt-image-1", "gpt-image-1-mini"] = "dall-e-3",
+                 ) -> None:
         """ Initialise the OpenAI Image API
         :param api_key: str: The API key for the OpenAI API
         :param model: str: The model to use (e.g. "dall-e-3", "gpt-image-1", "dall-e-2")
-        :param seed: int: The seed for reproducibility
         """
         self._api_key = api_key
         self._model = model
-        self._seed = seed
         self._client = OpenAI(api_key=self._api_key, base_url="https://api.openai.com/v1")
 
     def client(
-            self, prompt: str, quality: str = "standard", resolution="1024x1024", filename: str = "outer"
+            self, prompt: str,
+            quality: Literal["standard", "hd", "low", "medium", "high", "auto"] = "standard",
+            resolution: Literal["auto", "1024x1024", "1536x1024", "256x256", "512x512"] = "1024x1024",
+            filename: str = "outer"
     ) -> None:
         """ Generate image(s) with the given model
         :param prompt: str: The text prompt

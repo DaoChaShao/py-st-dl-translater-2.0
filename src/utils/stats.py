@@ -11,13 +11,14 @@ from numpy import ndarray, array, cumsum, argmax, random as np_random, sum as np
 from pandas import DataFrame, Series, read_csv
 from pprint import pprint
 from pathlib import Path
-from random import shuffle
+from random import shuffle, seed as rnd_seed, getstate, setstate
 from sklearn.compose import ColumnTransformer
 from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from time import perf_counter
 from torch import Tensor, tensor, float32
 
 from src.utils.decorator import timer
@@ -28,52 +29,104 @@ WIDTH: int = 64
 class NumpyRandomSeed:
     """ Setting random seed for reproducibility """
 
-    def __init__(self, description: str, seed: int = 27):
+    def __init__(self, description: str, seed: int = 27, tick_tock: bool = False):
         """ Initialise the RandomSeed class
         :param description: the description of a random seed
         :param seed: the seed value to be set
+        :param tick_tock: whether to measure elapsed time
         """
         self._description: str = description
         self._seed: int = seed
+        self._previous_py_seed = None
         self._previous_np_seed = None
+
+        self._tick: bool = tick_tock
+        self._start: float = 0.0
+        self._end: float = 0.0
+        self._elapsed: float = 0.0
 
     def __enter__(self):
         """ Set the random seed """
+        if self._tick:
+            self._start = perf_counter()
+
         # Save the previous random seed state
+        self._previous_py_seed = getstate()
         self._previous_np_seed = np_random.get_state()
 
         # Set the new random seed
+        rnd_seed(self._seed)
         np_random.seed(self._seed)
 
-        print("*" * 50)
-        print(f"{self._description!r} has been set randomness {self._seed}.")
-        print("-" * 50)
+        print("*" * WIDTH)
+        print(f"{self._description} has been set to {self._seed}.")
+        print("-" * WIDTH)
 
         return self
 
     def __exit__(self, *args):
         """ Exit the random seed context manager """
         # Restore the previous random seed state
+        if self._previous_py_seed is not None:
+            setstate(self._previous_py_seed)
         if self._previous_np_seed is not None:
             np_random.set_state(self._previous_np_seed)
 
-        print("-" * 50)
-        print(f"{self._description!r} has been restored to previous randomness.")
-        print("*" * 50)
+        # Calculate elapsed time if measuring
+        if self._tick:
+            self._end = perf_counter()
+            self._elapsed = self._end - self._start
+
+        print("-" * WIDTH)
+        print(f"{self._description} has been restored to previous randomness.")
+        if self._tick:
+            elapsed_time: str = self._format_time(self._elapsed)
+            print(f"{self._description} took {elapsed_time}.")
+        print("*" * WIDTH)
         print()
+
+        # Return False to propagate exceptions, True to suppress them
+        return False
+
+    @staticmethod
+    def _format_time(seconds: float) -> str:
+        """ Format time breakdown from seconds to days, hours, minutes, and seconds
+        :param seconds: time in seconds
+        :return: formatted time breakdown string
+        """
+        days: int = int(seconds // 86400)
+        hours: int = int((seconds % 86400) // 3600)
+        minutes: int = int((seconds % 3600) // 60)
+        secs: float = seconds % 60
+
+        parts: list[str] = []
+        if days > 0:
+            parts.append(f"{days} days")
+        if hours > 0:
+            parts.append(f"{hours} hours")
+        if minutes > 0:
+            parts.append(f"{minutes} minutes")
+        if secs > 0 or not parts:
+            parts.append(f"{secs:.2f} seconds")
+
+        return " ".join(parts)
 
     def __repr__(self):
         """ Return a string representation of the random seed """
-        return f"{self._description!r} is set to randomness {self._seed}."
+        base: str = f"NumpyRandomSeed(description={self._description}, seed={self._seed})"
+        if self._tick and self._elapsed > 0:
+            base += f", Elapsed Time: {self._elapsed:.2f} s"
+
+        return base
 
 
 @timer
-def load_csv(csv_path: str) -> tuple[DataFrame, DataFrame]:
+def load_csv(csv_path: str | Path) -> tuple[DataFrame, DataFrame]:
     """ Read data from a dataset file
     :param csv_path: path to the CSV file
     :return: data read from the file
     """
-    dataset: DataFrame = read_csv(csv_path)
+    dataset: DataFrame = read_csv(str(csv_path))
 
     y: DataFrame = dataset[:, -1]
     X: DataFrame = dataset.drop(dataset.columns[0], axis=1)
@@ -85,7 +138,7 @@ def load_csv(csv_path: str) -> tuple[DataFrame, DataFrame]:
 
 
 @timer
-def load_text(text_data_path: str, cols: bool = False, columns: list | None = None) -> DataFrame:
+def load_text(text_data_path: str | Path, cols: bool = False, columns: list | None = None) -> DataFrame:
     """ Read data from a txt file with a structural data format
     :param text_data_path: path to the text data file
     :param cols: whether to specify column names
@@ -93,9 +146,9 @@ def load_text(text_data_path: str, cols: bool = False, columns: list | None = No
     :return: data read from the text file
     """
     if cols:
-        data: DataFrame = read_csv(text_data_path, names=columns, sep=r"\s+")
+        data: DataFrame = read_csv(str(text_data_path), names=columns, sep=r"\s+")
     else:
-        data: DataFrame = read_csv(text_data_path, sep=r"\s+")
+        data: DataFrame = read_csv(str(text_data_path), sep=r"\s+")
 
     print(f"Loaded text data' shape is {data.shape}.")
 
@@ -400,7 +453,7 @@ def pca_importance(data: DataFrame, threshold: float = 0.95, top_n: int = None) 
 
 
 @timer
-def get_correlation_btw_features(features: DataFrame, top_n: int = 20) -> None:
+def get_correlation_among_features(features: DataFrame, top_n: int = 20) -> None:
     """ Display the strongest feature correlations
     :param features: the DataFrame containing the selected features for training
     :param top_n: the number of top correlation pairs to display
@@ -450,7 +503,7 @@ def get_categories_corr_ratio(categories: Series, measurements: Series) -> float
 
 
 @timer
-def get_correlation_btw_Xy(X: DataFrame, y: Series, top_n: int = 20, threshold: float = 0.05) -> list[str]:
+def get_correlation_among_Xy(X: DataFrame, y: Series, top_n: int = 20, threshold: float = 0.05) -> list[str]:
     """ Get the correlation of features with the label
     :param X: the DataFrame containing the selected features for training
     :param y: the Series containing the target values

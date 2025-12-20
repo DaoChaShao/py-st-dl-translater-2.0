@@ -21,7 +21,7 @@ from src.nets.seq_decoder import SeqDecoder
 from src.utils.PT import verify_seq_net_initialisation
 
 
-class GRUForSeqToSeq(BaseSeqNet):
+class SeqToSeqGRU(BaseSeqNet):
     """ Sequence-to-Sequence GRU Network for Sequence Tasks """
 
     def __init__(self,
@@ -63,6 +63,7 @@ class GRUForSeqToSeq(BaseSeqNet):
         """
         self._method: str = merge_method.lower()
 
+        # Initialise encoder and decoder
         self._encoder: nn.Module = self.init_encoder()
         self._decoder: nn.Module = self.init_decoder()
 
@@ -258,7 +259,7 @@ class GRUForSeqToSeq(BaseSeqNet):
 if __name__ == "__main__":
     from src.nets.seq2seq import SeqToSeqCoder
 
-    gru = GRUForSeqToSeq(
+    gru = SeqToSeqGRU(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

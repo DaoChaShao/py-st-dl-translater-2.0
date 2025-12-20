@@ -1,10 +1,18 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-19)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-20)
 
 ### Features
 
+- add training log for false GRU beam concat model ([5e65930](https://github.com///commit/5e659307a985c28dee2ae5354e107d4bf56d91b1))
+- add training log for false GRU beam search mean model ([1fe4d34](https://github.com///commit/1fe4d34dbbb04ae94aa9728e29483bb82ab284c3))
+- add training log for false GRU greedy mean model ([44411bf](https://github.com///commit/44411bf6ffa8ba8e31291b41ed22d6fb06dcae22))
+- add training log for false GRU greedy concat model ([46b34df](https://github.com///commit/46b34df2e2e24cffda8c5301cb584b67e2d72e7a))
+- add model-false-gru-greedy-mean.pth ([696b07b](https://github.com///commit/696b07b62582a4293d8a8b4e90f4ec734748c443))
+- add model-false-gru-greedy-concat.pth ([ac56bc7](https://github.com///commit/ac56bc76fc2074435263e8d539a3bc48cf60a50e))
+- add model-false-gru-beam-mean.pth ([975018c](https://github.com///commit/975018cd205f392b8b33198bc2bddd07cc9b9d65))
+- add model-false-gru-beam-concat.pth ([44bcc1d](https://github.com///commit/44bcc1d1f2da2f6639d53c6697e75fa96097ea93))
 - enable bidirectional support in SeqDecoder and update related logic ([0f51ac8](https://github.com///commit/0f51ac8c7d532898a1422312aee23d0de98db253))
 - add training log for true-gru-greedy-concat model ([c20d94a](https://github.com///commit/c20d94afa973a180c76773632fa7cfcd8f229c98))
 - add training log for true-gru-beam-concat model ([ebfc64f](https://github.com///commit/ebfc64fecdb7c1e66df30d37bfcd51a23ead2cf8))
@@ -181,6 +189,7 @@
 
 ### Code Refactoring
 
+- rename GRUForSeqToSeq class to SeqToSeqGRU for clarity ([8ff530c](https://github.com///commit/8ff530c696205f2165d35410972b45ca9d60b968))
 - simplify hidden size calculation in decoder initialization ([64fc24e](https://github.com///commit/64fc24e74e00f69c30b28f3621bfe0c05057e9ae))
 - clean up SQL.py by removing unnecessary import statement ([ff7f953](https://github.com///commit/ff7f953dcff295c6cffa7836672f869e58698bfc))
 - rename correlation functions for consistency ([b8c02be](https://github.com///commit/b8c02be12e6df9d99956d40160a61e6a8a5c4374))

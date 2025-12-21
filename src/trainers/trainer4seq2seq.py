@@ -9,7 +9,7 @@
 from PySide6.QtCore import QObject, Signal
 from datetime import datetime
 from json import dumps
-from torch import nn, optim, no_grad, save, device, tensor, exp
+from torch import nn, optim, no_grad, save, device, tensor, exp, Tensor
 
 from src.dataloaders import TorchDataLoader
 from src.trainers.calc4seq_text_quilty import TextQualityScorer
@@ -123,7 +123,7 @@ class TorchTrainer4SeqToSeq(QObject):
                 _total += src.size(0)
 
                 # Collect predictions and references for evaluation
-                src_lengths = (src != self._PAD).sum(dim=1)
+                src_lengths: Tensor = (src != self._PAD).sum(dim=1)
                 dynamic_lens = (src_lengths.float() * 1.5).long().clamp(min=10, max=100)
                 MAX_LEN = dynamic_lens.max().item()
                 generated = self._model.generate(src, max_len=MAX_LEN, strategy=self._S, beam_width=self._beam_size)
@@ -146,8 +146,9 @@ class TorchTrainer4SeqToSeq(QObject):
             }
 
         avg_val_loss = _loss / _total if _total > 0 else float("inf")
-        _metrics["perplexity"] = float(exp(tensor(avg_val_loss)).item())
-        _metrics["avg_val_loss"] = float(avg_val_loss)
+        dps: int = 4
+        _metrics["perplexity"] = round(float(exp(tensor(avg_val_loss)).item()), dps)
+        _metrics["avg_val_loss"] = round(float(avg_val_loss), dps)
 
         return _loss / _total, _metrics
 
@@ -182,10 +183,10 @@ class TorchTrainer4SeqToSeq(QObject):
             logger.info(dumps({
                 "epochs": epochs,
                 "epoch": epoch + 1,
-                "decode_strategy": self._S,
+                "strategy": self._S,
                 "alpha": self._optimiser.param_groups[0]["lr"],
-                "train_loss": round(float(train_loss), 4),
-                "valid_loss": round(float(valid_loss), 4),
+                "train_loss": train_loss,
+                "valid_loss": valid_loss,
                 **_metrics,
             }))
 

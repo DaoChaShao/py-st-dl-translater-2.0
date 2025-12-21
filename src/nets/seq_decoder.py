@@ -22,11 +22,10 @@ class SeqDecoder(nn.Module):
                  *,
                  net_category: str | SeqNets | Literal["gru", "lstm", "rnn"] = SeqNets.GRU,
                  ) -> None:
-        super().__init__()
         """ Initialise the Decoder class
         :param vocab_size: size of the target vocabulary
         :param embedding_dim: dimension of the embedding layer
-        :param hidden_dim: dimension of the hidden layer
+        :param hidden_size: dimension of the hidden layer
         :param num_layers: number of RNN layers
         :param dropout_rate: dropout rate for regularization
         :param bidirectional: bidirectional flag
@@ -34,6 +33,7 @@ class SeqDecoder(nn.Module):
         :param PAD: padding index for the embedding layer
         :param net_category: network category (e.g., 'gru')
         """
+        super().__init__()
         self._L: int = vocab_size  # Lexicon/Vocabulary size
         self._H: int = embedding_dim  # Embedding dimension
         self._M: int = hidden_size  # Hidden dimension
@@ -55,10 +55,18 @@ class SeqDecoder(nn.Module):
 
     @staticmethod
     def _set_num_directions(bidirectional: bool) -> int:
+        """ Set the number of directions based on bidirectionality
+        :param bidirectional: whether the RNN is bidirectional
+        :return: number of directions (1 or 2)
+        """
         return 2 if bidirectional else 1
 
     @staticmethod
     def _select_net(net_category: str) -> type:
+        """ Select the RNN network type based on the category
+        :param net_category: network category ('rnn', 'lstm', 'gru')
+        :return: corresponding PyTorch RNN class
+        """
         nets: dict[str, type] = {"rnn": nn.RNN, "lstm": nn.LSTM, "gru": nn.GRU}
 
         if net_category not in nets:
@@ -68,6 +76,11 @@ class SeqDecoder(nn.Module):
 
     @final
     def forward(self, tgt: Tensor, hidden: Tensor | tuple[Tensor, Tensor]) -> tuple:
+        """ Forward pass for the decoder
+        :param tgt: target input sequence [batch_size, tgt_len]
+        :param hidden: initial hidden state (and cell state for LSTM)
+        :return: logits [batch_size, tgt_len, vocab_size], final hidden state (and cell state for LSTM)
+        """
         embeddings = self._embed(tgt)
 
         # Keep consistent return types

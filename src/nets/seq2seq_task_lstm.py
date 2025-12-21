@@ -15,13 +15,13 @@ from torch import (Tensor, nn,
                    randint)
 from typing import override, Literal
 
-from src.configs.cfg_types import SeqMergeMethods, SeqStrategies
+from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 
 
-class LSTMForSeqToSeq(BaseSeqNet):
+class SeqToSeqLSTM(BaseSeqNet):
     """ Sequence-to-Sequence LSTM Network for Sequence Tasks """
 
     def __init__(self,
@@ -63,6 +63,7 @@ class LSTMForSeqToSeq(BaseSeqNet):
         """
         self._method: str = merge_method.lower()
 
+        # Initialise encoder and decoder
         self._encoder: nn.Module = self.init_encoder()
         self._decoder: nn.Module = self.init_decoder()
 
@@ -77,7 +78,7 @@ class LSTMForSeqToSeq(BaseSeqNet):
             self._vocab_src, self._H, self._M, self._C,
             dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_SRC, net_category="lstm",
+            PAD=self._PAD_SRC, net_category=SeqNets.LSTM,
         )
 
     @override
@@ -86,11 +87,12 @@ class LSTMForSeqToSeq(BaseSeqNet):
         :return: decoder module
         """
         hidden_size = self._M * 2 if (self._bid and self._method == "concat") else self._M
+
         return SeqDecoder(
             self._vocab_tgt, self._H, hidden_size, self._C,
-            dropout_rate=self._dropout, bidirectional=False,
+            dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_TGT, net_category="lstm",
+            PAD=self._PAD_TGT, net_category=SeqNets.LSTM,
         )
 
     @override
@@ -99,14 +101,11 @@ class LSTMForSeqToSeq(BaseSeqNet):
         :param hidden: hidden states from the encoder
         :return: merged hidden states
         """
-        if not self._bid:
-            return hidden
+        hn, cn = hidden
+        h = self._decoder.init_decoder_entries(hn, self._method)
+        c = self._decoder.init_decoder_entries(cn, self._method)
 
-        h, c = hidden
-        h_merged = self._decoder.init_decoder_entries(h, self._method)
-        c_merged = self._decoder.init_decoder_entries(c, self._method)
-
-        return (h_merged, c_merged)
+        return (h, c)
 
     @override
     def forward(self, src: Tensor, tgt: Tensor) -> Tensor:
@@ -269,7 +268,7 @@ if __name__ == "__main__":
         SeqMergeMethods.SUM
     ]
 
-    model = LSTMForSeqToSeq(
+    model = SeqToSeqLSTM(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

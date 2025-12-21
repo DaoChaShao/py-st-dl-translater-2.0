@@ -180,13 +180,14 @@ class TorchTrainer4SeqToSeq(QObject):
             self.losses.emit(epoch + 1, train_loss, valid_loss)
 
             # Log epoch results
+            dps: int = 4
             logger.info(dumps({
                 "epochs": epochs,
                 "epoch": epoch + 1,
                 "strategy": self._S,
                 "alpha": self._optimiser.param_groups[0]["lr"],
-                "train_loss": train_loss,
-                "valid_loss": valid_loss,
+                "train_loss": round(float(train_loss), dps),
+                "valid_loss": round(float(valid_loss), dps),
                 **_metrics,
             }))
 

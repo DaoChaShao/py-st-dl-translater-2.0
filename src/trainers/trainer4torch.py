@@ -131,8 +131,8 @@ class TorchTrainer(QObject):
                 "epochs": epochs,
                 "epoch": epoch + 1,
                 "alpha": self._optimiser.param_groups[0]["lr"],
-                "train_loss": round(float(train_loss), 4),
-                "valid_loss": round(float(valid_loss), 4),
+                "train_loss": train_loss,
+                "valid_loss": valid_loss,
                 **_metrics,
             }))
 

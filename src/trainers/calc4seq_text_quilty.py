@@ -78,9 +78,9 @@ class TextQualityScorer:
 
         dps: int = 4
         return {
-            "bleu": round(bleu, dps),
-            "rouge": round(rouge["rouge1_fmeasure"], dps),
-            "avg_pred_len": round(avg_pred_len, dps),
+            "bleu": round(float(bleu), dps),
+            "rouge": round(float(rouge["rouge1_fmeasure"].item()), dps),
+            "avg_pred_len": round(float(avg_pred_len), dps),
         }
 
 

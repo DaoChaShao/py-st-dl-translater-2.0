@@ -58,9 +58,7 @@ def main() -> None:
             EOS=dictionary_cn[Tokens.EOS],
             merge_method="mean",
             use_attention=True,
-            attention_method="concat",
-            attention_type="single",
-            head_num=8
+            attn_category="bahdanau"
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)

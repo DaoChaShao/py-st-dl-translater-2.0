@@ -80,6 +80,7 @@ if __name__ == "__main__":
     logger: Logger = record_log(f"train@{dt}")
 
     # Log some test messages
+    dps: int = 4
     epochs: int = randint(0, 10)
     for epoch in range(epochs):
         alpha: float = uniform(0, 0.01)
@@ -88,6 +89,6 @@ if __name__ == "__main__":
         logger.info(dumps({
             "epoch": epoch + 1,
             "alpha": alpha,
-            "train_loss": train_loss,
-            "valid_loss": valid_loss,
+            "train_loss": round(float(train_loss), dps),
+            "valid_loss": round(float(valid_loss), dps),
         }))

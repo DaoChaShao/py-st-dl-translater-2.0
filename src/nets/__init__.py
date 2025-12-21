@@ -15,14 +15,30 @@ for various machine learning tasks including segmentation, classification,
 and sequence modeling.
 
 Main Categories:
-+ BaseRNN: Base class for Recurrent Neural Networks
-+ BaseSeqNet: Base class for Sequence Networks
-+ MultiTask Models: Multi-task learning architectures (RNN, LSTM, GRU)
-+ Seq2Seq Models: Encoder-decoder architectures for sequence-to-sequence tasks
-+ SeqEncoder/SeqDecoder: Individual encoder and decoder components
-+ Attention Mechanisms: Single and multi-head attention modules for enhanced sequence modeling
-+ Standard4LayersUNetClassification: 4-layer UNet variant for semantic segmentation
-+ Standard5LayersUNetForClassification: 5-layer UNet variant for semantic segmentation
++ Base Classes: Fundamental network abstractions
+    - BaseRNN: Base class for Recurrent Neural Networks
+    - BaseSeqNet: Base class for general sequence networks
+    - BaseAttn: Base class for attention mechanisms
++ Attention Modules: Enhanced sequence modeling
+    - AdditiveAttention
+    - DotProductAttention
+    - ScaledDotProductAttention
++ Multi-Task Learning: RNN/LSTM/GRU variants supporting multiple outputs
+    - MultiTaskRNN
+    - MultiTaskLSTM
+    - MultiTaskGRU
++ Sequence-to-Sequence Architectures: Encoder-decoder networks
+    - SeqToSeqCoder
+    - SeqToSeqRNN
+    - SeqToSeqLSTM
+    - SeqToSeqGRU
++ Encoder & Decoder Components:
+    - SeqEncoder
+    - SeqDecoder
+    - SeqAttnDecoder
++ UNet Variants for Semantic Segmentation:
+    - Standard4LayersUNetClassification
+    - Standard5LayersUNetForClassification
 
 Usage:
 + Direct import of models via:
@@ -34,42 +50,45 @@ Usage:
 __author__ = "Shawn Yu"
 __version__ = "0.3.0"
 
-from .attention_multi import MultiHeadAttention
-from .attention_single import SingleHeadAttention
+from .attentions import AdditiveAttention, DotProductAttention, ScaledDotProductAttention
+from .base_attn import BaseAttn
 from .base_rnn import BaseRNN
 from .base_seq import BaseSeqNet
 from .multi_task_gru import MultiTaskGRU
 from .multi_task_lstm import MultiTaskLSTM
 from .multi_task_rnn import MultiTaskRNN
 from .seq2seq import SeqToSeqCoder
-from .seq2seq_attn_gru import AttnGRUForSeqToSeq
-from .seq2seq_attn_lstm import AttnLSTMForSeqToSeq
-from .seq2seq_attn_rnn import AttnRNNForSeqToSeq
-from .seq2seq_task_gru import GRUForSeqToSeq
-from .seq2seq_task_lstm import LSTMForSeqToSeq
-from .seq2seq_task_rnn import RNNForSeqToSeq
-from .seq_encoder import SeqEncoder
+from .seq2seq_task_gru import SeqToSeqGRU
+from .seq2seq_task_lstm import SeqToSeqLSTM
+from .seq2seq_task_rnn import SeqToSeqRNN
 from .seq_decoder import SeqDecoder
+from .seq_decoder4attn import SeqAttnDecoder
+from .seq_encoder import SeqEncoder
 from .unet4layers4sem import Standard4LayersUNetClassification
 from .unet5layers4sem import Standard5LayersUNetForClassification
 
 __all__ = [
-    "MultiHeadAttention",
-    "SingleHeadAttention",
+    "AdditiveAttention",
+    "DotProductAttention",
+    "ScaledDotProductAttention",
+
+    "BaseAttn",
     "BaseRNN",
     "BaseSeqNet",
+
     "MultiTaskGRU",
     "MultiTaskLSTM",
     "MultiTaskRNN",
+
     "SeqToSeqCoder",
-    "AttnGRUForSeqToSeq",
-    "AttnLSTMForSeqToSeq",
-    "AttnRNNForSeqToSeq",
-    "GRUForSeqToSeq",
-    "LSTMForSeqToSeq",
-    "RNNForSeqToSeq",
-    "SeqEncoder",
+    "SeqToSeqGRU",
+    "SeqToSeqLSTM",
+    "SeqToSeqRNN",
+
     "SeqDecoder",
+    "SeqAttnDecoder",
+    "SeqEncoder",
+
     "Standard4LayersUNetClassification",
     "Standard5LayersUNetForClassification",
 ]

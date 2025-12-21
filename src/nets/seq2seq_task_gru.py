@@ -14,7 +14,7 @@ from torch import (Tensor, nn,
                    randint)
 from typing import override, Literal
 
-from src.configs.cfg_types import SeqMergeMethods, SeqStrategies
+from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
@@ -92,7 +92,7 @@ class SeqToSeqGRU(BaseSeqNet):
             self._vocab_tgt, self._H, hidden_size, self._C,
             dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_TGT, net_category="gru",
+            PAD=self._PAD_TGT, net_category=SeqNets.GRU,
         )
 
     @override

@@ -1,10 +1,35 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-20)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-21)
 
 ### Features
 
+- round training and validation loss to specified decimal places in logging ([934fb2a](https://github.com///commit/934fb2a9c8383a2a0bdbff2508cdc0f788520119))
+- switch model from SeqToSeqLSTM to SeqToSeqRNN and update evaluation results ([920bde8](https://github.com///commit/920bde8a115dd137ffb7382e790dd3cea46294ac))
+- add training log for true RNN beam concat model ([cffe66f](https://github.com///commit/cffe66f5226372d7882d1c557dd783130f715d5d))
+- add model-true-rnn-beam-concat.pth ([c1d2bc3](https://github.com///commit/c1d2bc35e882a3e134c133cc55360ba19a691b9c))
+- update calc4seq_text_quilty.py to ensure proper type handling in metric calculations ([ea0149d](https://github.com///commit/ea0149d8e9597114cf542a0b3a1c4426e2c27f04))
+- refactor seq2seq_attn_gru.py to streamline attention handling and improve decoder initialization ([7458e06](https://github.com///commit/7458e06963346bad2c9d926f1e057706ff3bcf33))
+- remove rounding from training and validation loss in trainer4torch.py ([24d76fa](https://github.com///commit/24d76fab78f2fa016c70249504cc13699b8faaa7))
+- enhance trainer4seq2seq.py with type annotations and improved metrics rounding ([ecc5227](https://github.com///commit/ecc5227599c4f62e63757c0dfca696b60618a71a))
+- update trainer4attn.py to use Bahdanau attention mechanism ([cf830ee](https://github.com///commit/cf830eed406054dc2e90d23537466e251c3a2240))
+- update trainer.py to support SeqToSeqGRU, SeqToSeqLSTM, and SeqToSeqRNN models with beam search decoding ([bbc4092](https://github.com///commit/bbc40924d8e1a1ca29034d2fb90f7dca9771aae7))
+- add training log for beam search decoding with detailed metrics ([73b00c2](https://github.com///commit/73b00c25dce0a376336e6bf928788f980d277e78))
+- add SeqAttnDecoder class in seq_decoder4attn.py for attention-based decoding ([57f3bfa](https://github.com///commit/57f3bfa2a8d40cc7c4e64e956a030589a5d30604))
+- update parameter names and add docstrings in seq_decoder.py for clarity ([27cc0c8](https://github.com///commit/27cc0c861ba7238ca9adc24f57668335aa756aa9))
+- rename RNNForSeqToSeq to SeqToSeqRNN and update net_category to use SeqNets.RNN ([393eb9b](https://github.com///commit/393eb9b09d2c8b649313438ffcf9fdbbb9b68da0))
+- rename LSTMForSeqToSeq to SeqToSeqLSTM and update net_category to use SeqNets.LSTM ([44a1b3c](https://github.com///commit/44a1b3cbfc9408eadb1960fc787c0329c8a32296))
+- update net_category to use SeqNets.GRU for consistency ([d011cc3](https://github.com///commit/d011cc35d44ad245071b6a43643d85e78e6504bb))
+- add model-true-lstm-beam-concat.pth ([59ece70](https://github.com///commit/59ece70fe9734c63781e5541a5a478084dbb5f16))
+- add model-false-rnn-beam-concat.pth ([5914a08](https://github.com///commit/5914a08248007159a339179a0eda8a2db3c3104e))
+- add model-false-lstm-beam-concat.pth ([a19be27](https://github.com///commit/a19be27386c7542b5d2e9c3360d5fc5dd65062a1))
+- rename GRUForSeqToSeq to SeqToSeqGRU for consistency ([8b810ae](https://github.com///commit/8b810aebe6e61769daded8adf67fd667b69662f9))
+- round training and validation loss to specified decimal places in logger ([d22cfd1](https://github.com///commit/d22cfd10ffd54055fd409515daeec6311832a9df))
+- round evaluation metrics to specified decimal places ([7adeee6](https://github.com///commit/7adeee6e9da106247ddbe58487cd41337601babd))
+- add base attention mechanism class for sequence models ([8ea487d](https://github.com///commit/8ea487d482c4c28235cac623af838425cfc05091))
+- implement additive, dot-product, and scaled dot-product attention mechanisms ([a7566fe](https://github.com///commit/a7566fe87513fb479f167e24088eb0ca43b65241))
+- enhance model documentation and import structure in __init__.py ([2ce7229](https://github.com///commit/2ce72293c356f795fcc247fa0a02e9ff3a8306de))
 - add training log for false GRU beam concat model ([5e65930](https://github.com///commit/5e659307a985c28dee2ae5354e107d4bf56d91b1))
 - add training log for false GRU beam search mean model ([1fe4d34](https://github.com///commit/1fe4d34dbbb04ae94aa9728e29483bb82ab284c3))
 - add training log for false GRU greedy mean model ([44411bf](https://github.com///commit/44411bf6ffa8ba8e31291b41ed22d6fb06dcae22))
@@ -177,6 +202,7 @@
 
 ### Chore
 
+- update CHANGELOG for version 0.1.0 release ([d89d0d3](https://github.com///commit/d89d0d31434173b9faf77926004209e576656519))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))
 
 ### Docs

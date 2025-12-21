@@ -15,13 +15,13 @@ from torch import (Tensor, nn,
                    randint)
 from typing import override, Literal
 
-from src.configs.cfg_types import SeqMergeMethods, SeqStrategies
+from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets
 from src.nets.base_seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 
 
-class RNNForSeqToSeq(BaseSeqNet):
+class SeqToSeqRNN(BaseSeqNet):
     """ Sequence-to-Sequence Normal RNN Network for Sequence Tasks """
 
     def __init__(self,
@@ -59,10 +59,11 @@ class RNNForSeqToSeq(BaseSeqNet):
         :param PAD_TGT: padding index for the target embedding layer
         :param SOS: start-of-sequence token index
         :param EOS: end-of-sequence token index
-        :param net_category: network category (e.g., 'gru')
+        :param net_category: network category (e.g., 'rnn')
         """
         self._method: str = merge_method.lower()
 
+        # Initialise encoder and decoder
         self._encoder: nn.Module = self.init_encoder()
         self._decoder: nn.Module = self.init_decoder()
 
@@ -77,7 +78,7 @@ class RNNForSeqToSeq(BaseSeqNet):
             self._vocab_src, self._H, self._M, self._C,
             dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_SRC, net_category="rnn",
+            PAD=self._PAD_SRC, net_category=SeqNets.RNN,
         )
 
     @override
@@ -86,11 +87,12 @@ class RNNForSeqToSeq(BaseSeqNet):
         :return: decoder module
         """
         hidden_size = self._M * 2 if (self._bid and self._method == "concat") else self._M
+
         return SeqDecoder(
             self._vocab_tgt, self._H, hidden_size, self._C,
-            dropout_rate=self._dropout, bidirectional=False,
+            dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_TGT, net_category="rnn",
+            PAD=self._PAD_TGT, net_category=SeqNets.RNN,
         )
 
     @override
@@ -99,19 +101,6 @@ class RNNForSeqToSeq(BaseSeqNet):
         :param hidden: hidden states from the encoder
         :return: merged hidden states
         """
-        # if not self._bid:
-        #     return hidden
-        #
-        # # Returns a single Tensor
-        # batch_size = hidden.size(1)
-        # hidden = hidden.view(self._C, self._num_directions, batch_size, self._M)
-        #
-        # if self._method == "average":
-        #     return hidden.mean(dim=1)
-        # elif self._method == "concat":
-        #     return cat([hidden[:, 0], hidden[:, 1]], dim=-1)
-        # else:
-        #     raise ValueError(f"Unknown merge method: {self._method}")
         return self._decoder.init_decoder_entries(hidden, merge_method=self._method)
 
     @override
@@ -126,7 +115,6 @@ class RNNForSeqToSeq(BaseSeqNet):
 
         # Combine bidirectional hidden states
         hidden_ety = self._merge_bidirectional_hidden(hidden)
-
         # Decode input excludes the EOS token
         input_ety = tgt[:, :-1]  # Remove EOS token for decoder input
         logits, (_, _) = self._decoder(input_ety, hidden_ety)
@@ -276,7 +264,7 @@ if __name__ == "__main__":
         SeqMergeMethods.SUM
     ]
 
-    model = RNNForSeqToSeq(
+    model = SeqToSeqRNN(
         vocab_size_src=5000,
         vocab_size_tgt=6000,
         embedding_dim=128,

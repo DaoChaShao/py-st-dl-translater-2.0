@@ -46,8 +46,8 @@ def main() -> None:
 
         # Initialize model
         # model = SeqToSeqGRU(
-        # model = SeqToSeqRNN(
-        model = SeqToSeqLSTM(
+        model = SeqToSeqRNN(
+            # model = SeqToSeqLSTM(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -190,7 +190,7 @@ def main() -> None:
         SeqToSeqRNN Evaluation Results:
         ----------------------------------------------------------------
         "bid": false, "epoch": 64/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1299, "rouge": 0.4956
-        "bid": true,  "epoch": 18/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1166, "rouge": 0.4943 ???
+        "bid": true,  "epoch": 23/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1412, "rouge": 0.5107
         ****************************************************************
         ****************************************************************
         SeqToSeqLSTM Evaluation Results:

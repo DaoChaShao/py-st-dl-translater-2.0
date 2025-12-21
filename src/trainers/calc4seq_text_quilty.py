@@ -76,10 +76,11 @@ class TextQualityScorer:
         # Add extra stats info
         avg_pred_len: float = sum(len(pred) for pred in predictions) / len(predictions)
 
+        dps: int = 4
         return {
-            "bleu": float(bleu),
-            "rouge": float(rouge["rouge1_fmeasure"]),
-            "avg_pred_len": float(avg_pred_len),
+            "bleu": round(bleu, dps),
+            "rouge": round(rouge["rouge1_fmeasure"], dps),
+            "avg_pred_len": round(avg_pred_len, dps),
         }
 
 

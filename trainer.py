@@ -13,7 +13,9 @@ from src.configs.cfg_rnn import CONFIG4RNN
 from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethods
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
-from src.nets.seq2seq_task_gru import GRUForSeqToSeq
+from src.nets.seq2seq_task_gru import SeqToSeqGRU
+from src.nets.seq2seq_task_lstm import SeqToSeqLSTM
+from src.nets.seq2seq_task_rnn import SeqToSeqRNN
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
 
@@ -43,14 +45,16 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        model = GRUForSeqToSeq(
+        # model = SeqToSeqGRU(
+        # model = SeqToSeqRNN(
+        model = SeqToSeqLSTM(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
             hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
             num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
             dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-            bidirectional=False,
+            bidirectional=True,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
             PAD_SRC=dictionary_cn[Tokens.PAD],
             PAD_TGT=dictionary_en[Tokens.PAD],
@@ -65,7 +69,27 @@ def main() -> None:
         model.summary()
         """
         ****************************************************************
-        Model Summary for SeqToSeqTaskGRU (Bidirectional: True)
+        Model Summary for SeqToSeqGRU (Bidirectional: False)
+        ----------------------------------------------------------------
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          False
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         3,280,245
+        Trainable parameters:     3,280,245
+        Non-trainable parameters: 0
+        ****************************************************************
+        ****************************************************************
+        Model Summary for SeqToSeqGRU (Bidirectional: True)
         ----------------------------------------------------------------
         - Source Vocabulary Size: 5235
         - Target Vocabulary Size: 3189
@@ -85,7 +109,7 @@ def main() -> None:
         Non-trainable parameters: 0
         ****************************************************************
         ****************************************************************
-        Model Summary for GRUForSeqToSeq (Bidirectional: False)
+        Model Summary for SeqToSeqRNN (Bidirectional: True)
         ----------------------------------------------------------------
         - Source Vocabulary Size: 5235
         - Target Vocabulary Size: 3189
@@ -93,15 +117,35 @@ def main() -> None:
         - Hidden Size:            256
         - Number of Layers:       2
         - Dropout Rate:           0.5
-        - Bidirectional:          False
+        - Bidirectional:          True
         - Device:                 cpu
         - PAD Token (Source):     0
         - PAD Token (Target):     0
         - SOS Token:              2
         - EOS Token:              3
         ----------------------------------------------------------------
-        Total parameters:         3,280,245
-        Trainable parameters:     3,280,245
+        Total parameters:         4,160,117
+        Trainable parameters:     4,160,117
+        Non-trainable parameters: 0
+        ****************************************************************
+        ****************************************************************
+        Model Summary for SeqToSeqLSTM
+        ----------------------------------------------------------------
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          True
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         8,497,781
+        Trainable parameters:     8,497,781
         Non-trainable parameters: 0
         ****************************************************************
         """
@@ -116,7 +160,7 @@ def main() -> None:
             PAD=dictionary_en[Tokens.PAD],
             SOS=dictionary_en[Tokens.SOS],
             EOS=dictionary_en[Tokens.EOS],
-            decode_strategy=SeqStrategies.GREEDY,
+            decode_strategy=SeqStrategies.BEAM_SEARCH,
             beam_width=CONFIG4RNN.PARAMETERS.BEAM_SIZE,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
         )
@@ -126,15 +170,34 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.GRU}-{SeqStrategies.GREEDY}-{SeqMergeMethods.CONCAT}",
+            log_name=f"{SeqNets.RNN}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
         )
         """
-        "bid": true, "epoch": 74/100, "strategy": "beam", "merge": "mean", "bleu": 0.1235, "rouge": 0.4905,
-        "bid": true, "epoch": 52/100, "strategy": "beam", "merge": "concat", "bleu": 0.1675, "rouge": 0.5293
-        "bid": true, "epoch": 74/100, "strategy": "greedy", "merge": "mean", "bleu": 0.1133, "rouge": 0.4758
-        "bid": true, "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139
-        ---
-        "bid": false, 
+        ****************************************************************
+        SeqToSeqGRU Evaluation Results:
+        ----------------------------------------------------------------
+        "bid": false, "epoch": 84/100, "strategy": "beam",   "merge": "mean",   "bleu": 0.0961, "rouge": 0.4535
+        "bid": false, "epoch": 84/100, "strategy": "beam",   "merge": "concat", "bleu": 0.0961, "rouge": 0.4535
+        "bid": false, "epoch": 89/100, "strategy": "greedy", "merge": "concat", "bleu": 0.0860, "rouge": 0.4394
+        "bid": false, "epoch": 84/100, "strategy": "greedy", "merge": "mean",   "bleu": 0.0860. "rouge": 0.4394
+        ----------------------------------------------------------------
+        "bid": true,  "epoch": 52/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1675, "rouge": 0.5293
+        "bid": true,  "epoch": 74/100, "strategy": "beam",   "merge": "mean",   "bleu": 0.1235, "rouge": 0.4905
+        "bid": true,  "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139        
+        "bid": true,  "epoch": 74/100, "strategy": "greedy", "merge": "mean",   "bleu": 0.1133, "rouge": 0.4758
+        ****************************************************************
+        ****************************************************************
+        SeqToSeqRNN Evaluation Results:
+        ----------------------------------------------------------------
+        "bid": false, "epoch": 64/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1299, "rouge": 0.4956
+        "bid": true,  "epoch": 18/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1166, "rouge": 0.4943 ???
+        ****************************************************************
+        ****************************************************************
+        SeqToSeqLSTM Evaluation Results:
+        ----------------------------------------------------------------
+        "bid": false, "epoch": 68/100, "strategy": "beam",   "merge": "concat",  "bleu": 0.1707, "rouge": 0.5328
+        "bid": true,  "epoch": 79/100, "strategy": "beam",   "merge": "concat",  "bleu": 0.1134, "rouge": 0.4787
+        ****************************************************************
         """
 
 

@@ -15,7 +15,7 @@ from torch import (Tensor, nn,
 from typing import override, Literal
 
 from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets
-from src.nets.base_seq import BaseSeqNet
+from src.nets.base_seq2seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 from src.utils.PT import verify_seq_net_initialisation
@@ -162,7 +162,6 @@ class SeqToSeqGRU(BaseSeqNet):
         :param accelerator: device for computation
         :return: generated sequences tensor
         """
-
         # Start from SOS token
         decoder_input = full((batch_size, 1), self._SOS, dtype=long, device=accelerator)
         generated = []

@@ -17,9 +17,9 @@ class AttnHeads(StrEnum):
 
 @unique
 class AttnScorer(StrEnum):
-    CONCAT = "concat"
+    BAHDANAU = "Bahdanau"
     DOT_PRODUCT = "dot"
-    GENERAL = "general"
+    SCALED_DOT_PRODUCT = "sdot"
 
 
 @unique

@@ -1,10 +1,11 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-21)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-24)
 
 ### Features
 
+- add TorchTrainer4SeqToSeq class for seq2seq training with attention ([9fdf127](https://github.com///commit/9fdf127a6ae8fa711bf51b46debed96d84aefb19))
 - round training and validation loss to specified decimal places in logging ([934fb2a](https://github.com///commit/934fb2a9c8383a2a0bdbff2508cdc0f788520119))
 - switch model from SeqToSeqLSTM to SeqToSeqRNN and update evaluation results ([920bde8](https://github.com///commit/920bde8a115dd137ffb7382e790dd3cea46294ac))
 - add training log for true RNN beam concat model ([cffe66f](https://github.com///commit/cffe66f5226372d7882d1c557dd783130f715d5d))
@@ -180,6 +181,8 @@
 
 ### Bug Fixes
 
+- adjust dropout rate based on number of RNN layers ([98dc789](https://github.com///commit/98dc7890196fe92654e6fb15cbcf539f31f220c9))
+- update import paths for sequence models and decoders ([4d7753e](https://github.com///commit/4d7753eb25f8bfc408d578003b116d901d1061c1))
 - correct bidirectional flag in training log output ([cc6f011](https://github.com///commit/cc6f0117eff9d414468fe004d64a234a65453cab))
 - remove tensor conversion in beam search scoring and rename model class for consistency ([0848a5c](https://github.com///commit/0848a5cc1d732d1d49dfa434d6738fa15822f075))
 - remove unnecessary tensor conversion in beam search scoring ([fe6a464](https://github.com///commit/fe6a464bd86dbd17998a3b1d5e29cccba6b17336))
@@ -202,7 +205,7 @@
 
 ### Chore
 
-- update CHANGELOG for version 0.1.0 release ([d89d0d3](https://github.com///commit/d89d0d31434173b9faf77926004209e576656519))
+- update CHANGELOG for version 0.1.0 release ([b6e8ef0](https://github.com///commit/b6e8ef014c98f754f0480b65aa6d648fa61baa6f))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))
 
 ### Docs
@@ -215,6 +218,17 @@
 
 ### Code Refactoring
 
+- update model and training parameters in trainer4attn.py for clarity and consistency ([cccc801](https://github.com///commit/cccc801c01a543081b5ace8ecb0f955b63287527))
+- standardize whitespace in evaluation results output in trainer.py ([c00c957](https://github.com///commit/c00c9577dde8485589106ce61c4da1b7dac2862b))
+- update net_category parameter type and improve forward method consistency in seq_encoder.py ([4bd6454](https://github.com///commit/4bd64548f9cd0281b259d2774653ce7776ee0504))
+- rename SeqAttnDecoder to SeqDecoderWithAttn and update parameters for clarity ([45e69fc](https://github.com///commit/45e69fc717b79601e408558fd38fc082c12eadbf))
+- rename hidden parameter to enc_hn for clarity in seq_decoder.py ([f7077c5](https://github.com///commit/f7077c5627414d3f47f3838bf3a66e29e8d815e5))
+- update import path for BaseSeqNet to base_seq2seq.py for consistency ([d38fe51](https://github.com///commit/d38fe5143691c0e7c018ed017d6b1aa0bc53165a))
+- rename AttnGRUForSeqToSeq to SeqToSeqGRUWithAttn and update parameters for clarity ([69779ae](https://github.com///commit/69779aedfcd30630d9dfcbac2fbba1e78d9afdd4))
+- update attention scorer names for clarity and consistency ([ef3557b](https://github.com///commit/ef3557bf8bd073bdbc6f6bb2a5dd5965d42bd27f))
+- rename base_seq.py to base_seq2seq.py and update parameter names for clarity ([ac11023](https://github.com///commit/ac1102381061f7fba99e118f433a546dcac1c4e9))
+- enhance base attention mechanism with improved parameter naming and forward method ([16c26e2](https://github.com///commit/16c26e2e0a9fb7fe3128cb5efe935d1d95daf3e1))
+- update attention mechanisms to improve clarity and consistency ([d33975f](https://github.com///commit/d33975f2565126505cc241b7e0c658d615ac6553))
 - rename GRUForSeqToSeq class to SeqToSeqGRU for clarity ([8ff530c](https://github.com///commit/8ff530c696205f2165d35410972b45ca9d60b968))
 - simplify hidden size calculation in decoder initialization ([64fc24e](https://github.com///commit/64fc24e74e00f69c30b28f3621bfe0c05057e9ae))
 - clean up SQL.py by removing unnecessary import statement ([ff7f953](https://github.com///commit/ff7f953dcff295c6cffa7836672f869e58698bfc))

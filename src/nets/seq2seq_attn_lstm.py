@@ -20,7 +20,7 @@ from src.nets.attention_single import SingleHeadAttention
 # ---
 
 from src.configs.cfg_types import AttnScorer, SeqMergeMethods
-from src.nets.base_seq import BaseSeqNet
+from src.nets.base_seq2seq import BaseSeqNet
 from src.nets.seq_encoder import SeqEncoder
 from src.nets.seq_decoder import SeqDecoder
 

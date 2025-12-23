@@ -181,21 +181,21 @@ def main() -> None:
         "bid": false, "epoch": 89/100, "strategy": "greedy", "merge": "concat", "bleu": 0.0860, "rouge": 0.4394
         "bid": false, "epoch": 84/100, "strategy": "greedy", "merge": "mean",   "bleu": 0.0860. "rouge": 0.4394
         ----------------------------------------------------------------
-        "bid": true,  "epoch": 52/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1675, "rouge": 0.5293
+        "bid": true,  "epoch": 52/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1675, "rouge": 0.5293 √
         "bid": true,  "epoch": 74/100, "strategy": "beam",   "merge": "mean",   "bleu": 0.1235, "rouge": 0.4905
-        "bid": true,  "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139        
+        "bid": true,  "epoch": 52/100, "strategy": "greedy", "merge": "concat", "bleu": 0.1493, "rouge": 0.5139     
         "bid": true,  "epoch": 74/100, "strategy": "greedy", "merge": "mean",   "bleu": 0.1133, "rouge": 0.4758
         ****************************************************************
         ****************************************************************
         SeqToSeqRNN Evaluation Results:
         ----------------------------------------------------------------
         "bid": false, "epoch": 64/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1299, "rouge": 0.4956
-        "bid": true,  "epoch": 23/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1412, "rouge": 0.5107
+        "bid": true,  "epoch": 23/100, "strategy": "beam",   "merge": "concat", "bleu": 0.1412, "rouge": 0.5107 √
         ****************************************************************
         ****************************************************************
         SeqToSeqLSTM Evaluation Results:
         ----------------------------------------------------------------
-        "bid": false, "epoch": 68/100, "strategy": "beam",   "merge": "concat",  "bleu": 0.1707, "rouge": 0.5328
+        "bid": false, "epoch": 68/100, "strategy": "beam",   "merge": "concat",  "bleu": 0.1707, "rouge": 0.5328 √
         "bid": true,  "epoch": 79/100, "strategy": "beam",   "merge": "concat",  "bleu": 0.1134, "rouge": 0.4787
         ****************************************************************
         """

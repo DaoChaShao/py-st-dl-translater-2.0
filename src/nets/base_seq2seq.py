@@ -3,7 +3,7 @@
 # @Time     :   2025/12/15 17:37
 # @Author   :   Shawn
 # @Version  :   Version 0.1.0
-# @File     :   base_seq.py
+# @File     :   base_seq2seq.py
 # @Desc     :   
 
 from abc import ABC, abstractmethod
@@ -155,9 +155,9 @@ class BaseSeqNet(ABC, nn.Module):
         pass
 
     @abstractmethod
-    def _merge_bidirectional_hidden(self, hidden: Tensor) -> Tensor | tuple[Tensor, Tensor]:
+    def _merge_bidirectional_hidden(self, enc_hn: Tensor) -> Tensor:
         """ Merge bidirectional hidden states for decoder initialization
-        :param hidden: hidden state tensor(s)
+        :param enc_hn: hidden state tensor(s)
         :return: merged hidden state tensor(s)
         """
         pass
@@ -184,12 +184,11 @@ class BaseSeqNet(ABC, nn.Module):
 
     @abstractmethod
     def _greedy_decode(self,
-                       encoder_hidden: Tensor,
+                       dec_hn: Tensor,
                        batch_size: int, max_len: int, accelerator: device,
-                       decoder_hidden: Tensor | None = None,
                        ) -> Tensor:
         """ Greedy decoding strategy
-        :param decoder_hidden: initial hidden state for the decoder
+        :param dec_hn: initial hidden state for the decoder
         :param batch_size: size of the batch
         :param max_len: maximum length of the generated sequence
         :param accelerator: device for PyTorch
@@ -199,11 +198,11 @@ class BaseSeqNet(ABC, nn.Module):
 
     @abstractmethod
     def _beam_search_decode(self,
-                            decoder_hidden: Tensor,
+                            dec_hn: Tensor,
                             batch_size: int, max_len: int, beam_width: int, accelerator: device
                             ) -> Tensor:
         """ Beam search decoding strategy
-        :param decoder_hidden: initial hidden state for the decoder
+        :param dec_hn: initial hidden state for the decoder
         :param batch_size: size of the batch
         :param max_len: maximum length of the generated sequence
         :param beam_width: beam width for beam search

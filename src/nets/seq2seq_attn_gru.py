@@ -6,23 +6,21 @@
 # @File     :   seq2seq_attn_gru.py
 # @Desc     :
 
-from math import log
+from random import random
 from torch import (Tensor, nn,
-                   cat,
-                   device, full, long, ones, bool as torch_bool, where, full_like, empty,
-                   tensor, topk,
+                   device, full, long, cat, stack, arange,
                    randint)
 from typing import override, Literal
 
-from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets
-from src.nets.base_seq import BaseSeqNet
+from src.configs.cfg_types import SeqMergeMethods, SeqStrategies, SeqNets, AttnScorer
+from src.nets.base_seq2seq import BaseSeqNet
 from src.nets.seq_decoder import SeqDecoder
-from src.nets.seq_decoder4attn import SeqAttnDecoder
+from src.nets.seq_decoder4attn import SeqDecoderWithAttn
 from src.nets.seq_encoder import SeqEncoder
 from src.utils.PT import TorchRandomSeed
 
 
-class AttnGRUForSeqToSeq(BaseSeqNet):
+class SeqToSeqGRUWithAttn(BaseSeqNet):
     """ Sequence-to-Sequence GRU Network for Sequence Tasks """
 
     def __init__(self,
@@ -31,10 +29,28 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
                  accelerator: str | Literal["cuda", "cpu"] = "cpu",
                  PAD_SRC: int = 0, PAD_TGT: int = 0, SOS: int = 2, EOS: int = 3,
                  *,
-                 merge_method: str | SeqMergeMethods | Literal["concat", "max", "mean", "sum"] = "mean",
-                 use_attention: bool = False,
-                 attn_category: str | Literal["bahdanau", "dot", "sdot"] = "bahdanau"
+                 merge_method: str | SeqMergeMethods | Literal["concat", "max", "mean", "sum"] = "concat",
+                 teacher_forcing_ratio: float = 0.5,
+                 use_attention: bool = True,
+                 attn_scorer: str | AttnScorer | Literal["bahdanau", "dot", "sdot"] = "dot"
                  ) -> None:
+        """ Initialize the SeqToSeqTaskGRU class
+        :param vocab_size_src: size of the source vocabulary
+        :param vocab_size_tgt: size of the target vocabulary
+        :param embedding_dim: dimension of the embedding layer
+        :param hidden_size: dimension of the hidden layer
+        :param num_layers: number of RNN layers
+        :param dropout_rate: dropout rate for regularization
+        :param bidirectional: bidirectional flag
+        :param accelerator: accelerator for PyTorch
+        :param PAD_SRC: padding index for the source embedding layer
+        :param PAD_TGT: padding index for the target embedding layer
+        :param SOS: start-of-sequence token index
+        :param EOS: end-of-sequence token index
+        :param merge_method: method to merge bidirectional hidden states
+        :param use_attention: whether to use attention mechanism
+        :param attn_scorer: attention scorer type
+        """
         super().__init__(
             vocab_size_src=vocab_size_src,
             vocab_size_tgt=vocab_size_tgt,
@@ -49,25 +65,11 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
             SOS=SOS,
             EOS=EOS
         )
-        """ Initialize the SeqToSeqTaskGRU class
-        :param vocab_size_src: size of the source vocabulary
-        :param vocab_size_tgt: size of the target vocabulary
-        :param embedding_dim: dimension of the embedding layer
-        :param hidden_dim: dimension of the hidden layer
-        :param num_layers: number of RNN layers
-        :param dropout_rate: dropout rate for regularization
-        :param bidirectional: bidirectional flag
-        :param accelerator: accelerator for PyTorch
-        :param PAD_SRC: padding index for the source embedding layer
-        :param PAD_TGT: padding index for the target embedding layer
-        :param SOS: start-of-sequence token index
-        :param EOS: end-of-sequence token index
-        :param net_category: network category (e.g., 'gru')
-        """
         self._method: str = merge_method.lower()
+        self._teacher_ratio: float = teacher_forcing_ratio
 
         self._use_attn: bool = use_attention
-        self._attn_category: str = attn_category
+        self._scorer: str = attn_scorer
 
         # Initialise encoder and decoder
         self._encoder: nn.Module = self.init_encoder()
@@ -84,7 +86,8 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
             self._vocab_src, self._H, self._M, self._C,
             dropout_rate=self._dropout, bidirectional=self._bid,
             accelerator=self._accelerator,
-            PAD=self._PAD_SRC, net_category="gru",
+            PAD=self._PAD_SRC,
+            net_category=SeqNets.GRU,
         )
 
     @override
@@ -92,31 +95,32 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
         """ Initialize the decoder module
         :return: decoder module
         """
-        hidden_size = self._M * 2 if self._bid and self._method == "concat" else self._M
-
         if self._use_attn:
-            return SeqAttnDecoder(
-                self._vocab_tgt, self._H, hidden_size, self._C,
+            return SeqDecoderWithAttn(
+                self._vocab_tgt, self._H, self._M, self._C,
                 dropout_rate=self._dropout, bidirectional=self._bid,
                 accelerator=self._accelerator,
-                PAD=self._PAD_TGT, net_category=SeqNets.GRU,
-                attn_category=self._attn_category
+                PAD=self._PAD_TGT,
+                net_category=SeqNets.GRU,
+                use_attention=self._use_attn,
+                attn_category=self._scorer
             )
         else:
             return SeqDecoder(
-                self._vocab_tgt, self._H, hidden_size, self._C,
+                self._vocab_tgt, self._H, self._M, self._C,
                 dropout_rate=self._dropout, bidirectional=self._bid,
                 accelerator=self._accelerator,
-                PAD=self._PAD_TGT, net_category=SeqNets.GRU,
+                PAD=self._PAD_TGT,
+                net_category=SeqNets.GRU,
             )
 
     @override
-    def _merge_bidirectional_hidden(self, hidden: Tensor) -> Tensor:
+    def _merge_bidirectional_hidden(self, enc_hn: Tensor) -> Tensor:
         """ Merge bidirectional hidden states for decoder initialization
-        :param hidden: hidden states from the encoder
+        :param enc_hn: hidden states from the encoder
         :return: merged hidden states
         """
-        return self._decoder.init_decoder_entries(hidden, merge_method=self._method)
+        return self._decoder.init_decoder_entries(enc_hn, merge_method=self._method)
 
     @override
     def forward(self, src: Tensor, tgt: Tensor) -> Tensor:
@@ -125,164 +129,204 @@ class AttnGRUForSeqToSeq(BaseSeqNet):
         :param tgt: target/output tensor
         :return: output logits tensor
         """
-        # Encode
-        _, (hidden, _), lengths_src = self._encoder(src)
+        _, tgt_len = tgt.shape
 
-        # Combine bidirectional hidden states
-        hidden_ety = self._merge_bidirectional_hidden(hidden)
-        # Decode input excludes the EOS token
-        input_ety = tgt[:, :-1]  # Remove EOS token for decoder input
-        logits, (_, _) = self._decoder(input_ety, hidden_ety)
+        # Encoder forward
+        enc_outs, (enc_hn, _), _ = self._encoder(src)
+        # Merge bidirectional hidden for decoder initialization
+        dec_hn_entries: Tensor = self._merge_bidirectional_hidden(enc_hn)
 
-        return logits
+        # Initialize decoder input with <SOS> tokens, shape: (B,1)
+        tokens_entries: Tensor = tgt[:, 0].unsqueeze(1)
+
+        L: list[Tensor] = []
+        # start from 1 because 0 is <SOS>
+        for ts in range(1, tgt_len):
+            # Decoder step
+            # decide decoder call based on attention usage
+            if self._use_attn:
+                logit, (dec_hn_entries, _) = self._decoder(tokens_entries, dec_hn_entries, enc_outs)
+            else:
+                logit, (dec_hn_entries, _) = self._decoder(tokens_entries, dec_hn_entries)
+            # shape: (B,1,V)
+            L.append(logit)
+
+            # Teacher forcing: decide next input
+            if random() < self._teacher_ratio:
+                # teacher forcing
+                tokens_entries = tgt[:, ts].unsqueeze(1)
+            else:
+                # model prediction
+                tokens_entries = logit.argmax(dim=2)
+
+        # Concatenate all logits along time dimension, shape: (B, tgt_len-1, V)
+        return cat(L, dim=1)
 
     @override
     def generate(self,
-                 src: Tensor, max_len: int = 100,
-                 strategy: str | SeqStrategies | Literal["greedy", "beam"] = "greedy", beam_width: int = 5
+                 src: Tensor, max_len: int = 50,
+                 strategy: str | SeqStrategies | Literal["greedy", "beam"] = "greedy", beam_width: int = 5,
+                 dec_hn: Tensor | None = None
                  ) -> Tensor:
         """ Generate sequences
         :param src: source/input tensor
         :param max_len: maximum length of generated sequences
         :param strategy: generation strategy ('greedy' or 'beam')
         :param beam_width: beam width for beam search
+        :param dec_hn: decoder hidden state
         :return: generated sequences tensor
         """
         batches = src.size(0)
 
         # Encoder
-        _, (hidden, _), lengths_src = self._encoder(src)
+        outputs, (hn, _), _ = self._encoder(src)
 
         # Combine bidirectional hidden states
-        entries: Tensor = self._merge_bidirectional_hidden(hidden)
+        hn_entries: Tensor = self._merge_bidirectional_hidden(hn)
 
         match strategy:
             case "greedy":
-                return self._greedy_decode(entries, batches, max_len, src.device)
+                return self._greedy_decode(hn_entries, batches, max_len, src.device, enc_outs=outputs)
             case "beam":
-                return self._beam_search_decode(entries, batches, max_len, beam_width, src.device)
+                return self._beam_search_decode(hn_entries, batches, max_len, beam_width, src.device, enc_outs=outputs)
             case _:
                 raise ValueError(f"Unknown generation strategy: {strategy}")
 
     @override
     def _greedy_decode(self,
-                       decoder_hidden: Tensor,
+                       dec_hn: Tensor,
                        batch_size: int, max_len: int, accelerator: device,
-                       encoder_hidden: Tensor = None,
+                       *,
+                       enc_outs: Tensor | None = None,
                        ) -> Tensor:
         """ Greedy decoding implementation
-        :param decoder_hidden: initial hidden state for the decoder
+        :param dec_hn: initial hidden state for the decoder
         :param batch_size: size of the batch
         :param max_len: maximum length of generated sequences
         :param accelerator: device for computation
         :return: generated sequences tensor
         """
+        tgt = full((batch_size, 1), self._SOS, dtype=long, device=accelerator)
 
-        # Start from SOS token
-        decoder_input = full((batch_size, 1), self._SOS, dtype=long, device=accelerator)
-        generated = []
+        generation: list[Tensor] = []
+        for _ in range(max_len):
+            # Decoder step
+            if self._use_attn:
+                logits, (dec_hn, _) = self._decoder(tgt, dec_hn, enc_outs)
+            else:
+                logits, (dec_hn, _) = self._decoder(tgt, dec_hn)
+            # Take the most probable token
+            next_tokens = logits.argmax(dim=2)  # [B, 1]
+            generation.append(next_tokens)
+            # Update target tokens
+            tgt = next_tokens
 
-        # Track which sequences are still active
-        active = ones(batch_size, dtype=torch_bool, device=accelerator)
-
-        for step in range(max_len):
-            if not active.any():
-                break
-
-            logits, (hn, _) = self._decoder(decoder_input, decoder_hidden)
-
-            next_token = logits.argmax(dim=2)
-            next_token = where(active.unsqueeze(1), next_token, full_like(next_token, self._EOS))
-
-            generated.append(next_token)
-            active = active & (next_token.squeeze(1) != self._EOS)
-            decoder_input = next_token
-
-            # Update hidden state only for active sequences
-            decoder_hidden = hn
-
-        return cat(generated, dim=1) if generated else empty((batch_size, 0), dtype=long, device=accelerator)
+        # Concatenate along time dimension - [B, max_len]
+        return cat(generation, dim=1)
 
     @override
     def _beam_search_decode(self,
-                            decoder_hidden: Tensor,
-                            batch_size: int, max_len: int, beam_width: int, accelerator: device
+                            dec_hn: Tensor,
+                            batch_size: int, max_len: int, beam_width: int, accelerator: device,
+                            *,
+                            enc_outs: Tensor | None = None
                             ) -> Tensor:
         """ Beam search decoding implementation
-        :param decoder_hidden: initial hidden state for the decoder
+        :param dec_hn: initial hidden state for the decoder
         :param batch_size: size of the batch
         :param max_len: maximum length of generated sequences
-        :param beam_width: beam width for beam search
+        :param beam_width: beam width for beam search - K
         :param accelerator: device for computation
         :return: generated sequences tensor
         """
-        results = []
+        # beams: [B, K, 1]
+        beams = full((batch_size, beam_width, 1),
+                     self._SOS, dtype=long, device=accelerator)
 
-        for idx in range(batch_size):
-            # Get hidden state of a single example
-            batch_hidden = decoder_hidden[:, idx:idx + 1]
+        # scores: [B, K]
+        scores = full((batch_size, beam_width),
+                      float("-inf"), device=accelerator)
+        scores[:, 0] = 0.0
 
-            # Initialize beams
-            beams = [{
-                "tokens": [self._SOS],
-                "score": 0.0,
-                "hidden": batch_hidden,
-                "finished": False
-            }]
+        # hidden: [L, B, H] → [L, B, K, H]
+        dec_hn = dec_hn.unsqueeze(2).expand(-1, -1, beam_width, -1)
 
-            for step in range(max_len):
-                new_beams = []
+        # enc_outs: [B, S, H] → [B, K, S, H]
+        if enc_outs is not None:
+            enc_outs = enc_outs.unsqueeze(1).expand(-1, beam_width, -1, -1)
 
-                for beam in beams:
-                    if beam["finished"]:
-                        new_beams.append(beam)
-                        continue
+        for _ in range(max_len):
+            # tgt: [B*K, 1]
+            tgt = beams[:, :, -1].reshape(batch_size * beam_width, 1)
 
-                    last_token = beam["tokens"][-1]
-                    input_token = tensor([[last_token]], device=accelerator)
+            # hidden: [L, B*K, H]
+            flat_hn = dec_hn.reshape(dec_hn.size(0),
+                                     batch_size * beam_width, -1)
 
-                    logits, (hn, _) = self._decoder(input_token, beam["hidden"])
-                    probs = nn.functional.softmax(logits[:, -1, :], dim=-1)
+            if self._use_attn:
+                flat_enc = enc_outs.reshape(batch_size * beam_width,
+                                            enc_outs.size(2), -1)
+                logits, (new_hn, _) = self._decoder(tgt, flat_hn, flat_enc)
+            else:
+                logits, (new_hn, _) = self._decoder(tgt, flat_hn)
 
-                    top_k_probs, top_k_indices = topk(probs, beam_width, dim=-1)
+            # log_probs: [B, K, V]
+            log_probs = logits.squeeze(1).log_softmax(dim=-1)
+            log_probs = log_probs.view(batch_size, beam_width, -1)
 
-                    for i in range(beam_width):
-                        token = top_k_indices[0, i].item()
-                        token_prob = max(top_k_probs[0, i].item(), 1e-10)
+            # total_scores: [B, K, V]
+            total_scores = scores.unsqueeze(2) + log_probs
 
-                        new_beam = {
-                            "tokens": beam["tokens"] + [token],
-                            "score": beam["score"] + log(token_prob + 1e-10),
-                            "hidden": hn,
-                            "finished": (token == self._EOS)
-                        }
-                        new_beams.append(new_beam)
+            # flatten to [B, K*V]
+            total_scores = total_scores.view(batch_size, -1)
 
-                beams = sorted(new_beams, key=lambda x: x["score"], reverse=True)[:beam_width]
+            # top-K
+            top_scores, top_indices = total_scores.topk(beam_width, dim=1)
 
-                if all(beam["finished"] for beam in beams):
-                    break
+            vocab_size = log_probs.size(-1)
+            beam_indices = top_indices // vocab_size  # [B, K]
+            token_indices = top_indices % vocab_size  # [B, K]
 
-            best_beam = beams[0]
-            result_tokens = best_beam["tokens"][1:]
-            result_tensor = tensor(result_tokens, device=accelerator)
-            results.append(result_tensor)
+            # update beams
+            new_beams = []
+            for b in range(batch_size):
+                new_beams.append(
+                    cat([
+                        beams[b, beam_indices[b]],
+                        token_indices[b].unsqueeze(1)
+                    ], dim=1)
+                )
 
-        return nn.utils.rnn.pad_sequence(results, batch_first=True, padding_value=self._EOS)
+            beams = stack(new_beams, dim=0)  # [B, K, T+1]
+            scores = top_scores
+
+            # update hidden
+            new_hn = new_hn.view(new_hn.size(0), batch_size, beam_width, -1)
+            dec_hn = new_hn.gather(
+                2,
+                beam_indices.unsqueeze(0).unsqueeze(-1).expand_as(new_hn)
+            )
+
+        # select best beam
+        best = scores.argmax(dim=1)  # [B]
+        batch_idx = arange(batch_size, device=accelerator)
+        outputs = beams[batch_idx, best]  # [B, T]
+
+        return outputs[:, 1:]
 
 
 if __name__ == "__main__":
     with TorchRandomSeed("Test"):
-        model = AttnGRUForSeqToSeq(
+        model = SeqToSeqGRUWithAttn(
             vocab_size_src=80,
             vocab_size_tgt=100,
             embedding_dim=65,
             hidden_size=128,
             num_layers=2,
             bidirectional=True,
-            merge_method="mean",
+            merge_method="concat",
             use_attention=True,
-            attn_category="bahdanau"
+            attn_scorer="dot"
         )
 
         batch_size = 4

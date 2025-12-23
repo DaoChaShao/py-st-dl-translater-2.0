@@ -41,7 +41,7 @@ class BaseRNN(ABC, nn.Module):
         self._M: int = hidden_size  # Hidden dimension
         self._C: int = num_layers  # RNN layers count
 
-        self._dropout: float = dropout_rate
+        self._dropout: float = dropout_rate if num_layers > 1 else 0.0
         self._bid: bool = bidirectional
         self._accelerator: str = accelerator.lower()
 

@@ -6,6 +6,7 @@
 # @File     :   seq_decoder.py
 # @Desc     :   
 
+from random import choice
 from torch import (Tensor, nn, device, zeros_like,
                    randint)
 from typing import final, Literal, Final
@@ -48,7 +49,7 @@ class SeqDecoder(nn.Module):
         self._net = self._select_net(self._type)(
             self._H, self._M, num_layers,
             batch_first=True, bidirectional=False,
-            dropout=dropout_rate
+            dropout=self._dropout
         )
         self._drop = nn.Dropout(p=self._dropout)
         self._linear = nn.Linear(self._M, self._L)
@@ -75,21 +76,21 @@ class SeqDecoder(nn.Module):
         return nets[net_category]
 
     @final
-    def forward(self, tgt: Tensor, hidden: Tensor | tuple[Tensor, Tensor]) -> tuple:
+    def forward(self, tgt: Tensor, enc_hn: Tensor | tuple[Tensor, Tensor]) -> tuple:
         """ Forward pass for the decoder
         :param tgt: target input sequence [batch_size, tgt_len]
-        :param hidden: initial hidden state (and cell state for LSTM)
+        :param enc_hn: initial hidden state (and cell state for LSTM)
         :return: logits [batch_size, tgt_len, vocab_size], final hidden state (and cell state for LSTM)
         """
         embeddings = self._embed(tgt)
 
         # Keep consistent return types
         if self._type == "lstm":
-            outputs, (hn, cn) = self._net(embeddings, hidden)
+            outputs, (hn, cn) = self._net(embeddings, enc_hn)
         else:
             # RNN & GRU
-            outputs, hn = self._net(embeddings, hidden)
-            cn = zeros_like(hn, device=device(self._accelerator))
+            outputs, hn = self._net(embeddings, enc_hn)
+            cn = zeros_like(hn, device=self._accelerator)
 
         logits = self._linear(self._drop(outputs))
 
@@ -97,34 +98,34 @@ class SeqDecoder(nn.Module):
 
     # Decoder Preparation
     def init_decoder_entries(self,
-                             hidden: Tensor,
+                             enc_hn: Tensor,
                              merge_method: str | Literal["concat", "max", "mean", "sum"] = "mean"
                              ) -> Tensor:
         """ Initialize the decoder input from the encoder hidden state
-        :param hidden: encoder hidden state [num_layers * num_directions, batch_size, hidden_size]
-        :param encoder_bid: whether the encoder is bidirectional
-        :param decoder_bid: whether the decoder is bidirectional
+        :param enc_hn: encoder hidden state [num_layers * num_directions, batch_size, hidden_size]
         :param merge_method: method to combine bidirectional hidden states ('mean', 'max', 'sum', 'concat')
         :return: decoder initial hidden state [num_layers, batch_size, hidden_size] or
         """
-        num_layers_times_num_directions, batches, hidden_size = hidden.shape
+        num_layers_times_num_directions, batches, enc_hn_size = enc_hn.shape
         num_layers: int = num_layers_times_num_directions // self._num_directions
 
+        # reshape encoder hidden to [num_layers, enc_num_directions, batch, hidden_size]
+        hn = enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size)
         # Reconstruct hidden state
         match merge_method.lower():
             case "mean":
-                return hidden.view(num_layers, self._num_directions, batches, hidden_size).mean(dim=1)
+                return enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size).mean(dim=1)
             case "max":
-                return hidden.view(num_layers, self._num_directions, batches, hidden_size).max(dim=1).values
+                return enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size).max(dim=1).values
             case "sum":
-                return hidden.view(num_layers, self._num_directions, batches, hidden_size).sum(dim=1)
+                return enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size).sum(dim=1)
             case "concat":
                 # if merge_method="concat"，decoder hidden_size must double that of encoder
-                hn = hidden.view(num_layers, self._num_directions, batches, hidden_size)
+                hn = enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size)
                 # Forward + Backward concatenation = 2 * hidden_size
-                return hn.transpose(1, 2).reshape(num_layers, batches, self._num_directions * hidden_size)
+                return hn.transpose(1, 2).reshape(num_layers, batches, self._num_directions * enc_hn_size)
             case _:
-                raise ValueError(f"Unsupported method: {self._method}")
+                raise ValueError(f"Unsupported method: {merge_method}")
 
 
 if __name__ == "__main__":
@@ -136,7 +137,7 @@ if __name__ == "__main__":
     batch_size = 3
 
     # Initialise encoder
-    bid: bool = False
+    bid: bool = choice([True, False])
     encoder_gru = SeqEncoder(vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="gru")
     encoder_lstm = SeqEncoder(
         vocab_size, embedding_dim, hidden_size, num_layers, bidirectional=bid, net_category="lstm"
@@ -160,7 +161,7 @@ if __name__ == "__main__":
     outputs_rnn, (hidden_rnn, cell_rnn), lengths_rnn = encoder_rnn(src)
 
     print("*" * 64)
-    print("Encoder Test Results")
+    print(f"Encoder Test Results (bidirectional={bid})")
     print("*" * 64)
     print("GRU Encoder outputs shape:", outputs_gru.shape)
     print("GRU Encoder Hidden shape:", hidden_gru.shape)
@@ -187,7 +188,7 @@ if __name__ == "__main__":
     logits_rnn, (hn_rnn, cn_rnn) = decoder_rnn(tgt, decoder_gru.init_decoder_entries(hidden_rnn))
 
     print("*" * 64)
-    print("Decoder Test Outputs")
+    print(f"Decoder Test Outputs (bidirectional={bid})")
     print("*" * 64)
     print("GRU Decoder outputs shape:", logits_gru.shape)
     print("GRU Decoder Hidden shape:", hn_gru.shape)

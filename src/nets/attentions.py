@@ -6,177 +6,129 @@
 # @File     :   attentions.py
 # @Desc     :   
 
-from torch import nn, Tensor, bmm, einsum, matmul
+from math import sqrt
+from torch import (Tensor, bmm,
+                   nn, tanh,
+                   rand, tensor, bool as torch_bool)
 from typing import override
 
 from src.nets.base_attn import BaseAttn
 
 
 class AdditiveAttention(BaseAttn):
-    """ Bahdanau Additive Attention Mechanism """
+    """ Bahdanau (Additive) Attention """
 
-    def __init__(self, enc_hn_size: int, dec_hn_size: int, *, attn_size: int) -> None:
+    def __init__(self, enc_hn_dims: int, dec_hn_dims: int, attn_hidden: int | None = None) -> None:
         """ Initialize the additive attention mechanism
-        :param enc_hn_size: hidden state dimension of the encoder
-        :param dec_hn_size: hidden state dimension of the decoder
-        :param attn_size: size of the attention layer
+        :param enc_hn_dims: encoder hidden size
+        :param dec_hn_dims: decoder hidden size
+        :param attn_hidden: intermediate attention hidden size, default min(enc, dec)
         """
-        super().__init__(
-            enc_hn_size=enc_hn_size,
-            dec_hn_size=dec_hn_size
-        )
-        self._attn_size: int = attn_size
+        super().__init__(enc_hn_dims, dec_hn_dims)
+        self._attn_hidden = attn_hidden or min(enc_hn_dims, dec_hn_dims)
 
-        # Support key and value from encoder
-        self._key: nn.Linear = nn.Linear(self._enc_size, self._attn_size, bias=False)
-        self._value: nn.Linear = nn.Linear(self._attn_size, 1, bias=False)
-        # Support query from decoder
-        self._query: nn.Linear = nn.Linear(self._dec_size, self._attn_size, bias=False)
+        # Linear layers for additive attention
+        self._enc_key = nn.Linear(enc_hn_dims, self._attn_hidden, bias=False)
+        self._dec_query = nn.Linear(dec_hn_dims, self._attn_hidden, bias=False)
+        self._value = nn.Linear(self._attn_hidden, 1, bias=False)
 
-    @override
-    def forward(self, dec_hn: Tensor, enc_outs: Tensor, pad_mask: Tensor | None = None) -> tuple[Tensor, Tensor]:
-        """ Forward pass for additive attention
-        :param dec_hn: decoder hidden state [1, batch_size, hidden_size]
-        :param enc_outs: encoder outputs [src_len, batch_size, hidden_size]
-        :param pad_mask: padding mask [src_len, batch_size]
-        :return: attention weights [batch_size, src_len], context vector [batch_size, hidden_size]
+    def score(self, query: Tensor, memory: Tensor, mask: Tensor | None = None) -> Tensor:
+        """ Compute additive attention scores
+        :param query: decoder hidden at current time step [B, D_dec]
+        :param memory: encoder outputs (key/value) [B, S, D_enc]
+        :param mask: attention mask [B, S, S]
+        :return scores: alignment scores [B, S]
         """
-        if dec_hn.dim() == 3:
-            dec_hn = dec_hn.squeeze(0)  # [batch_size, dec_hidden]
+        # memory: [B, S, D_enc] -> [B, S, attn_hidden]
+        M: Tensor = self._enc_key(memory)
 
-        # Project encoder outputs and decoder hidden state
-        key = self._key(enc_outs)  # [src_len, batch, attn_size]
-        query = self._query(dec_hn).unsqueeze(0)  # [1, batch, attn_size]
+        # query: [B, D_dec] -> [B, 1, attn_hidden]
+        Q: Tensor = self._dec_query(query).unsqueeze(1)
 
-        # Calculate energies (additive)
-        score = self._value(nn.functional.tanh(key + query)).squeeze(-1)
+        # Additive combination + tanh -> [B, S, attn_hidden]
+        combined = tanh(M + Q)
+        # Project to scalar score -> [B, S, 1] -> squeeze -> [B, S]
+        scores = self._value(combined).squeeze(2)
 
-        # Transpose to [batch_size, src_len]
-        score = score.transpose(0, 1)  # [batch, src_len]
-
-        # Apply mask (if provided)
-        if pad_mask is not None:
-            # batch_size=Ture, otherwise transpose it
-            score = score.masked_fill(pad_mask == 1, float("-inf"))
-
-        # Compute attention weights - [batch_size, src_len]
-        attn_weights = nn.functional.softmax(score, dim=1)
-
-        # Compute context vector - # [batch_size, hidden_size]
-        context_vector = bmm(attn_weights.unsqueeze(1), enc_outs.transpose(0, 1)).squeeze(1)
-
-        return attn_weights, context_vector
-
-    @property
-    def attn_size(self) -> int:
-        return self._attn_size
-
-    @property
-    def key(self) -> nn.Linear:
-        return self._key
-
-    @property
-    def value(self) -> nn.Linear:
-        return self._value
-
-    @property
-    def query(self) -> nn.Linear:
-        return self._query
+        return scores
 
 
 class DotProductAttention(BaseAttn):
     """ Dot-Product Attention Mechanism """
 
-    def __init__(self, enc_hn_size: int, dec_hn_size: int) -> None:
+    def __init__(self, enc_hn_dims: int, dec_hn_dims: int) -> None:
         """ Initialize the dot-product attention mechanism
-        :param enc_hn_size: hidden state dimension of the encoder
-        :param dec_hn_size: hidden state dimension of the decoder
+        :param enc_hn_dims: hidden state dimension of the encoder
+        :param dec_hn_dims: hidden state dimension of the decoder
         """
         super().__init__(
-            enc_hn_size=enc_hn_size,
-            dec_hn_size=dec_hn_size
+            enc_hn_dims=enc_hn_dims,
+            dec_hn_dims=dec_hn_dims
         )
+        assert enc_hn_dims == dec_hn_dims, "DotAttention requires encoder_dims == decoder_dims"
 
     @override
-    def forward(self, dec_hn: Tensor, enc_outs: Tensor, pad_mask: Tensor | None = None) -> tuple[Tensor, Tensor]:
-        """ Forward pass for dot-product attention
-        :param dec_hn: decoder hidden state [1, batch_size, hidden_size]
-        :param enc_outs: encoder outputs [src_len, batch_size, hidden_size]
-        :param pad_mask: padding mask [src_len, batch_size]
-        :return: attention weights [batch_size, src_len], context vector [batch_size, hidden_size]
+    def score(self, query: Tensor, memory: Tensor) -> Tensor:
+        """ Compute alignment scores using dot product
+        :param query:   [B, D_dec]
+        :param memory:  [B, S, D_enc]
+        :return: scores [B, S]
         """
-        if dec_hn.dim() == 3:
-            dec_hn = dec_hn.squeeze(0)  # [batch_size, dec_hidden]
+        # Dot product between query and memory
+        # query:  [B, D_dec] -> [B, 1, D_dec]
+        # memory: [B, S, D_enc] -> [B, S, D_dec]
+        # scores: bmm -> [B, 1, S] -> squeeze -> [B, S]
+        scores: Tensor = bmm(query.unsqueeze(1), memory.transpose(1, 2)).squeeze(1)
 
-        # Calculate energies (dot product)
-        energies: Tensor = einsum("bh,sbh->bs", dec_hn, enc_outs)  # [batch, src_len]
-
-        # Apply mask (if provided) - [batch, src_len]
-        if pad_mask is not None:
-            # batch_size=Ture, otherwise transpose it
-            energies: Tensor = energies.masked_fill(pad_mask == 1, float("-inf"))
-
-        # Compute attention weights - [batch_size, src_len]
-        attn_weights: Tensor = nn.functional.softmax(energies, dim=1)
-
-        # Compute context vector - # [batch_size, hidden_size]
-        context: Tensor = bmm(attn_weights.unsqueeze(1), enc_outs.transpose(0, 1)).squeeze(1)
-
-        return attn_weights, context
+        return scores
 
 
 class ScaledDotProductAttention(BaseAttn):
+    """ Scaled Dot-Product Attention """
 
-    def __init__(self, enc_hn_size: int, dec_hn_size: int) -> None:
-        """ Initialize the scaled dot-product attention mechanism
-        :param enc_hn_size: hidden state dimension of the encoder
-        :param dec_hn_size: hidden state dimension of the decoder
+    def __init__(self, enc_hn_dims: int, dec_hn_dims: int) -> None:
+        super().__init__(enc_hn_dims, dec_hn_dims)
+        assert enc_hn_dims == dec_hn_dims, "ScaledDotProductAttention requires enc_hn_dims == dec_hn_dims"
+        self._scale = sqrt(enc_hn_dims)
+
+    def score(self, query: Tensor, memory: Tensor) -> Tensor:
+        """ Compute scaled dot-product attention scores
+        :param query: [B, D_dec]
+        :param memory: [B, S, D_enc]
+        :return: scores: [B, S]
         """
-        super().__init__(
-            enc_hn_size=enc_hn_size,
-            dec_hn_size=dec_hn_size
-        )
-
-        self._query: nn.Linear = nn.Linear(self._enc_size, self._enc_size, bias=False)
-        self._key: nn.Linear = nn.Linear(self._enc_size, self._enc_size, bias=False)
-        self._value: nn.Linear = nn.Linear(self._enc_size, self._enc_size, bias=False)
-
-    @override
-    def forward(self, dec_hn: Tensor, enc_outs: Tensor, pad_mask: Tensor | None = None) -> tuple[Tensor, Tensor]:
-        """ Forward pass for scaled dot-product attention
-        :param dec_hn: decoder hidden state [1, batch_size, hidden_size]
-        :param enc_outs: encoder outputs [src_len, batch_size, hidden_size]
-        :param pad_mask: padding mask [src_len, batch_size]
-        :return: attention weights [batch_size, src_len], context vector [batch_size, hidden_size]
-        """
-        Q: Tensor = self._query(dec_hn.squeeze(0).unsqueeze(1))  # [batch, 1, hidden]
-        keys: Tensor = enc_outs.transpose(0, 1)
-        K: Tensor = self._key(keys)  # [batch, src_len, hidden]
-        V: Tensor = self._value(keys)  # [batch, src_len, hidden]
-
-        energies: Tensor = matmul(Q, K.transpose(-2, -1)) / (self.enc_size ** 0.5)  # [batch, 1, src_len]
-        if pad_mask is not None and pad_mask.dim() == 2:
-            # batch_size=Ture, otherwise transpose it
-            pad_mask = pad_mask.unsqueeze(1)  # [src_len,batch] -> batch,1,src_len
-            energies = energies.masked_fill(pad_mask == 1, float("-inf"))
-
-        attn_weights = nn.functional.softmax(energies, dim=-1).squeeze(1)
-        context = matmul(attn_weights.unsqueeze(1), V).squeeze(1)
-
-        return attn_weights, context
-
-    @property
-    def key(self) -> nn.Linear:
-        return self._key
-
-    @property
-    def value(self) -> nn.Linear:
-        return self._value
-
-    @property
-    def query(self) -> nn.Linear:
-        return self._query
+        # query: [B, D] -> [B, 1, D]
+        # memory: [B, S, D]
+        # bmm -> [B, 1, S] -> squeeze -> [B, S]
+        scores = bmm(query.unsqueeze(1), memory.transpose(1, 2)).squeeze(1)
+        # Scaled by sqrt(d)
+        scores = scores / self._scale
+        return scores
 
 
 if __name__ == "__main__":
-    pass
+    batch_size = 2
+    src_len = 5
+    hidden_dim = 16
+
+    curr_dec_hn: Tensor = rand(batch_size, hidden_dim)  # decoder hidden t
+    enc_outs: Tensor = rand(batch_size, src_len, hidden_dim)  # encoder outputs
+    mask: Tensor = tensor([[0, 0, 1, 0, 1], [0, 0, 0, 1, 1]], dtype=torch_bool)
+
+    # Additive (Bahdanau) Attention
+    attn_bahdanau = AdditiveAttention(enc_hn_dims=hidden_dim, dec_hn_dims=hidden_dim)
+    context, weights = attn_bahdanau(curr_dec_hn, enc_outs, mask)
+    print("bahdanau context:", context.shape)  # [B, D]
+    print("bahdanau weights:", weights.shape)  # [B, S]
+
+    # Dot-Product Attention
+    attn_dot = DotProductAttention(enc_hn_dims=hidden_dim, dec_hn_dims=hidden_dim)
+    context, weights = attn_dot(curr_dec_hn, enc_outs, mask)
+    print("dot context:", context.shape)  # [B, D]
+    print("dot weights:", weights.shape)  # [B, S]
+
+    # Scaled Dot-Product Attention
+    attn_scaled = ScaledDotProductAttention(enc_hn_dims=hidden_dim, dec_hn_dims=hidden_dim)
+    context, weights = attn_scaled(curr_dec_hn, enc_outs, mask)
+    print("scaled context:", context.shape)  # [B, D]
+    print("scaled weights:", weights.shape)  # [B, S]

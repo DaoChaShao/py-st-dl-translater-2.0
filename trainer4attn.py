@@ -12,8 +12,8 @@ from torch import optim, nn
 from src.configs.cfg_rnn import CONFIG4RNN
 from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethods, AttnScorer
 from src.configs.parser import set_argument_parser
-from src.trainers.trainer4seq2seq import TorchTrainer4SeqToSeq
-from src.nets.seq2seq_attn_gru import AttnGRUForSeqToSeq
+from src.trainers.trainer4seq2seq_attn import TorchTrainer4SeqToSeq
+from src.nets.seq2seq_attn_gru import SeqToSeqGRUWithAttn
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
 
@@ -25,7 +25,7 @@ def main() -> None:
     # Set up argument parser
     args = set_argument_parser()
 
-    with TorchRandomSeed("Chinese to English (Seq2Seq) Translation"):
+    with TorchRandomSeed("Chinese to English (Seq2Seq) with attentions Translation"):
         # Get the dictionary
         dic_cn: Path = Path(CONFIG4RNN.FILEPATHS.DICTIONARY_CN)
         dictionary_cn = load_json(dic_cn) if dic_cn.exists() else print("Dictionary file not found.")
@@ -43,7 +43,7 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        model = AttnGRUForSeqToSeq(
+        model = SeqToSeqGRUWithAttn(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -56,9 +56,10 @@ def main() -> None:
             PAD_TGT=dictionary_en[Tokens.PAD],
             SOS=dictionary_cn[Tokens.SOS],
             EOS=dictionary_cn[Tokens.EOS],
-            merge_method="mean",
+            merge_method=SeqMergeMethods.CONCAT,
+            teacher_forcing_ratio=0.5,
             use_attention=True,
-            attn_category="bahdanau"
+            attn_scorer=AttnScorer.DOT_PRODUCT
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -67,12 +68,7 @@ def main() -> None:
         model.summary()
         """
         ****************************************************************
-        Model Summary for AttentionGRUForSeqToSeq
-        - merge_method:           mean
-        - use_attention:          True
-        - attention_method:       concat
-        - attention_type:         single
-        - head_num:               8
+        Model Summary for SeqToSeqGRUWithAttn
         ----------------------------------------------------------------
         - Source Vocabulary Size: 5235
         - Target Vocabulary Size: 3189
@@ -87,8 +83,8 @@ def main() -> None:
         - SOS Token:              2
         - EOS Token:              3
         ----------------------------------------------------------------
-        Total parameters:         16,826,211
-        Trainable parameters:     16,826,211
+        Total parameters:         5,312,373
+        Trainable parameters:     5,312,373
         Non-trainable parameters: 0
         ****************************************************************
         """
@@ -103,7 +99,7 @@ def main() -> None:
             PAD=dictionary_en[Tokens.PAD],
             SOS=dictionary_en[Tokens.SOS],
             EOS=dictionary_en[Tokens.EOS],
-            decode_strategy=SeqStrategies.GREEDY,
+            decode_strategy=SeqStrategies.BEAM_SEARCH,
             beam_width=CONFIG4RNN.PARAMETERS.BEAM_SIZE,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
         )
@@ -113,9 +109,10 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.GRU}-{SeqStrategies.GREEDY}-{SeqMergeMethods.CONCATENATE}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
         )
         """
+        "bid": true, "epoch": 38/100, "strategy": "beam", "merge": "concat", "bleu": 0.1586, "rouge": 0.5474
         """
 
 

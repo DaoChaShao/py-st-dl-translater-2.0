@@ -53,7 +53,7 @@ __version__ = "0.3.0"
 from .attentions import AdditiveAttention, DotProductAttention, ScaledDotProductAttention
 from .base_attn import BaseAttn
 from .base_rnn import BaseRNN
-from .base_seq import BaseSeqNet
+from .base_seq2seq import BaseSeqNet
 from .multi_task_gru import MultiTaskGRU
 from .multi_task_lstm import MultiTaskLSTM
 from .multi_task_rnn import MultiTaskRNN
@@ -62,7 +62,7 @@ from .seq2seq_task_gru import SeqToSeqGRU
 from .seq2seq_task_lstm import SeqToSeqLSTM
 from .seq2seq_task_rnn import SeqToSeqRNN
 from .seq_decoder import SeqDecoder
-from .seq_decoder4attn import SeqAttnDecoder
+from .seq_decoder4attn import SeqDecoderWithAttn
 from .seq_encoder import SeqEncoder
 from .unet4layers4sem import Standard4LayersUNetClassification
 from .unet5layers4sem import Standard5LayersUNetForClassification
@@ -86,7 +86,7 @@ __all__ = [
     "SeqToSeqRNN",
 
     "SeqDecoder",
-    "SeqAttnDecoder",
+    "SeqDecoderWithAttn",
     "SeqEncoder",
 
     "Standard4LayersUNetClassification",

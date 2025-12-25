@@ -45,8 +45,8 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        # model = SeqToSeqGRU(
-        model = SeqToSeqRNN(
+        model = SeqToSeqGRU(
+            # model = SeqToSeqRNN(
             # model = SeqToSeqLSTM(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
@@ -170,7 +170,7 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.RNN}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
         )
         """
         ****************************************************************

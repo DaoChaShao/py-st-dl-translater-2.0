@@ -66,9 +66,6 @@ class SeqDecoderWithAttn(nn.Module):
             else:
                 self._aligner = nn.Identity()
 
-            # Initialise the linear for combining context and hidden state
-            self._fusion = nn.Sequential(nn.Linear(self._M + self._M, self._M), nn.ReLU())
-
         self._embed = nn.Embedding(self._L, self._H, padding_idx=self._PAD)
         self._net = self._select_net(self._type)(
             self._H, self._M, num_layers,
@@ -77,8 +74,7 @@ class SeqDecoderWithAttn(nn.Module):
         )
         self._drop = nn.Dropout(p=self._dropout)
         if self._use_attn:
-            # hidden + context
-            self._linear = nn.Linear(self._M + self._M, self._L)
+            self._linear = nn.Linear(self._M, self._L)
         else:
             self._linear = nn.Linear(self._M, self._L)
 
@@ -139,22 +135,24 @@ class SeqDecoderWithAttn(nn.Module):
             context: list[Tensor] = []
             for ts in range(tgt_len):
                 # Get hidden state at current time step - [B, H]
-                curr_dec_hn: Tensor = outputs[:, ts, :]
+                # curr_dec_hn: Tensor = outputs[:, ts, :]
+                curr_dec_hn: Tensor = hn[-1]
 
                 # Get the context score and vector - [B, M]
                 curr_context, _ = self._attn(curr_dec_hn, aligned_enc_outs)
-                # Combine current decoder hidden state with context for next step - [B, H*2]
-                combined = cat([curr_dec_hn, curr_context], dim=1)
-                curr_next_step = self._fusion(combined)
+
                 # Extend context vector dimension - [B, 1, M]
-                context.append(curr_next_step.unsqueeze(1))
+                context.append(curr_context.unsqueeze(1))
 
             # concat all context
             contexts = cat(context, dim=1)  # [B, tgt_len, H]
 
-            # concat rnn output + context
-            combined = cat([outputs, contexts], dim=2)  # [B, tgt_len, H + H]
-            logits = self._linear(self._drop(combined))  # [B, tgt_len, vocab_size]
+            # concat hidden output and context vector
+            attn_outs: list[Tensor] = []
+            for ts in range(tgt_len):
+                attn_outs.append((outputs[:, ts, :] + contexts[:, ts, :]).unsqueeze(1))
+            attn_outs: Tensor = cat(attn_outs, dim=1)  # [B, tgt_len, H]
+            logits = self._linear(self._drop(attn_outs))
 
             return logits, (hn, cn)
         else:

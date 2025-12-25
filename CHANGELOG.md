@@ -187,6 +187,7 @@
 
 ### Bug Fixes
 
+- correct training log format and update attention scoring methods in trainer4attn.py ([c075919](https://github.com///commit/c07591901ec56bca2d307a62ce765bc8d6756ceb))
 - update model initialization to use SeqToSeqGRU and correct log name for beam search strategy ([f3b177c](https://github.com///commit/f3b177c32018951798e996b259d1bf3b639d1a85))
 - adjust dropout rate based on number of RNN layers ([98dc789](https://github.com///commit/98dc7890196fe92654e6fb15cbcf539f31f220c9))
 - update import paths for sequence models and decoders ([4d7753e](https://github.com///commit/4d7753eb25f8bfc408d578003b116d901d1061c1))
@@ -212,7 +213,7 @@
 
 ### Chore
 
-- update CHANGELOG for version 0.1.0 release ([76456bd](https://github.com///commit/76456bdd47beebead413714fa2bd8a03ea506e77))
+- update CHANGELOG for version 0.1.0 release ([12b48a6](https://github.com///commit/12b48a6856968d382663ad73b983a4d006091095))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))
 
 ### Docs

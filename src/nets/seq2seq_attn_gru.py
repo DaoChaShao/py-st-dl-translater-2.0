@@ -21,7 +21,7 @@ from src.utils.PT import TorchRandomSeed
 
 
 class SeqToSeqGRUWithAttn(BaseSeqNet):
-    """ Sequence-to-Sequence GRU Network for Sequence Tasks """
+    """ Sequence-to-Sequence GRU Network for Sequence Tasks with and without attention Mechanism """
 
     def __init__(self,
                  vocab_size_src: int, vocab_size_tgt: int, embedding_dim: int, hidden_size: int, num_layers: int,
@@ -106,8 +106,10 @@ class SeqToSeqGRUWithAttn(BaseSeqNet):
                 attn_category=self._scorer
             )
         else:
+            hidden_size = self._M * 2 if self._bid and self._method == "concat" else self._M
+
             return SeqDecoder(
-                self._vocab_tgt, self._H, self._M, self._C,
+                self._vocab_tgt, self._H, hidden_size, self._C,
                 dropout_rate=self._dropout, bidirectional=self._bid,
                 accelerator=self._accelerator,
                 PAD=self._PAD_TGT,

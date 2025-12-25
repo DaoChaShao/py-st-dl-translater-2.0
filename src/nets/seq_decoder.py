@@ -121,8 +121,6 @@ class SeqDecoder(nn.Module):
                 return enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size).sum(dim=1)
             case "concat":
                 # if merge_method="concat"，decoder hidden_size must double that of encoder
-                hn = enc_hn.view(num_layers, self._num_directions, batches, enc_hn_size)
-                # Forward + Backward concatenation = 2 * hidden_size
                 return hn.transpose(1, 2).reshape(num_layers, batches, self._num_directions * enc_hn_size)
             case _:
                 raise ValueError(f"Unsupported method: {merge_method}")

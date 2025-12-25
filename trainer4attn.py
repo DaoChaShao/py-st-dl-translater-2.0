@@ -14,6 +14,7 @@ from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethod
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq_attn import TorchTrainer4SeqToSeq
 from src.nets.seq2seq_attn_gru import SeqToSeqGRUWithAttn
+from src.nets.seq2seq_attn_rnn import SeqToSeqRNNWithAttn
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
 
@@ -43,7 +44,8 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        model = SeqToSeqGRUWithAttn(
+        # model = SeqToSeqGRUWithAttn(
+        model = SeqToSeqRNNWithAttn(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -83,8 +85,8 @@ def main() -> None:
         - SOS Token:              2
         - EOS Token:              3
         ----------------------------------------------------------------
-        Total parameters:         5,312,373
-        Trainable parameters:     5,312,373
+        Total parameters:         4,495,989
+        Trainable parameters:     4,495,989
         Non-trainable parameters: 0
         ****************************************************************
         """
@@ -109,10 +111,33 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
+            log_name=f"{SeqNets.RNN}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
         )
         """
-        "bid": true, "epoch": 38/100, "strategy": "beam", "merge": "concat", "bleu": 0.1586, "rouge": 0.5474
+        ****************************************************************
+        Training Log for SeqToSeqGRU with attentions
+        ----------------------------------------------------------------
+        "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
+        "bid": true,
+        ****************************************************************
+        ****************************************************************
+        Training Log for SeqToSeqGRU with attention and without attention
+        ----------------------------------------------------------------
+        "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
+        "bid": true, "epoch": 54/100, "strategy": "beam", "merge": "concat", "bleu": 0.1613, "rouge": 0.5433, "attn": false
+        ****************************************************************
+        ****************************************************************
+        Training Log for SeqToSeqRNN with attention and without attention
+        ----------------------------------------------------------------
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "dot"
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": false
+        ****************************************************************
+        ****************************************************************
+        Training Log for SeqToSeqLSTM with attention and without attention
+        ----------------------------------------------------------------
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "dot"
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": false
+        ****************************************************************
         """
 
 

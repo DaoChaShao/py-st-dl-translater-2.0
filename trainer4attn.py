@@ -118,7 +118,8 @@ def main() -> None:
         Training Log for SeqToSeqGRU with attentions
         ----------------------------------------------------------------
         "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
-        "bid": true,
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "bahdanau"
+        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "scaled_dot"
         ****************************************************************
         ****************************************************************
         Training Log for SeqToSeqGRU with attention and without attention

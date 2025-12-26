@@ -14,6 +14,7 @@ from src.configs.cfg_types import Tokens, SeqNets, SeqStrategies, SeqMergeMethod
 from src.configs.parser import set_argument_parser
 from src.trainers.trainer4seq2seq_attn import TorchTrainer4SeqToSeq
 from src.nets.seq2seq_attn_gru import SeqToSeqGRUWithAttn
+from src.nets.seq2seq_attn_lstm import SeqToSeqLSTMWithAttn
 from src.nets.seq2seq_attn_rnn import SeqToSeqRNNWithAttn
 from src.utils.stats import load_json
 from src.utils.PT import TorchRandomSeed
@@ -45,7 +46,8 @@ def main() -> None:
 
         # Initialize model
         # model = SeqToSeqGRUWithAttn(
-        model = SeqToSeqRNNWithAttn(
+        model = SeqToSeqLSTMWithAttn(
+        # model = SeqToSeqRNNWithAttn(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -89,6 +91,46 @@ def main() -> None:
         Trainable parameters:     4,495,989
         Non-trainable parameters: 0
         ****************************************************************
+        ****************************************************************
+        Model Summary for SeqToSeqLSTMWithAttn
+        ----------------------------------------------------------------
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          True
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         5,318,261
+        Trainable parameters:     5,318,261
+        Non-trainable parameters: 0
+        ****************************************************************
+        ****************************************************************
+        Model Summary for SeqToSeqRNNWithAttn
+        ----------------------------------------------------------------
+        - Source Vocabulary Size: 5235
+        - Target Vocabulary Size: 3189
+        - Embedding Dimension:    128
+        - Hidden Size:            256
+        - Number of Layers:       2
+        - Dropout Rate:           0.5
+        - Bidirectional:          True
+        - Device:                 cpu
+        - PAD Token (Source):     0
+        - PAD Token (Target):     0
+        - SOS Token:              2
+        - EOS Token:              3
+        ----------------------------------------------------------------
+        Total parameters:         2,851,445
+        Trainable parameters:     2,851,445
+        Non-trainable parameters: 0
+        ****************************************************************
         """
 
         # Setup trainer
@@ -117,8 +159,8 @@ def main() -> None:
         ****************************************************************
         Training Log for SeqToSeqGRU with attentions
         ----------------------------------------------------------------
-        "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
         "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "bahdanau"
+        "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
         "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "scaled_dot"
         ****************************************************************
         ****************************************************************
@@ -128,16 +170,16 @@ def main() -> None:
         "bid": true, "epoch": 54/100, "strategy": "beam", "merge": "concat", "bleu": 0.1613, "rouge": 0.5433, "attn": false
         ****************************************************************
         ****************************************************************
-        Training Log for SeqToSeqRNN with attention and without attention
-        ----------------------------------------------------------------
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "dot"
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": false
-        ****************************************************************
-        ****************************************************************
         Training Log for SeqToSeqLSTM with attention and without attention
         ----------------------------------------------------------------
         "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "dot"
         "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": false
+        ****************************************************************
+        ****************************************************************
+        Training Log for SeqToSeqRNN with attention and without attention
+        ----------------------------------------------------------------
+        "bid": true, "epoch": 16/100, "strategy": "beam", "merge": "concat", "bleu": 0.0808, "rouge": 0.4785, "attn": true, "score": "dot"
+        "bid": true, "epoch": 15/100, "strategy": "beam", "merge": "concat", "bleu": 0.0938, "rouge": 0.4875, "attn": false
         ****************************************************************
         """
 

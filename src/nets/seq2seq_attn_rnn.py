@@ -101,7 +101,7 @@ class SeqToSeqRNNWithAttn(BaseSeqNet):
                 dropout_rate=self._dropout, bidirectional=self._bid,
                 accelerator=self._accelerator,
                 PAD=self._PAD_TGT,
-                net_category=SeqNets.GRU,
+                net_category=SeqNets.RNN,
                 use_attention=self._use_attn,
                 attn_category=self._scorer
             )
@@ -242,12 +242,10 @@ class SeqToSeqRNNWithAttn(BaseSeqNet):
         :return: generated sequences tensor
         """
         # beams: [B, K, 1]
-        beams = full((batch_size, beam_width, 1),
-                     self._SOS, dtype=long, device=accelerator)
+        beams = full((batch_size, beam_width, 1), self._SOS, dtype=long, device=accelerator)
 
         # scores: [B, K]
-        scores = full((batch_size, beam_width),
-                      float("-inf"), device=accelerator)
+        scores = full((batch_size, beam_width), float("-inf"), device=accelerator)
         scores[:, 0] = 0.0
 
         # hidden: [L, B, H] → [L, B, K, H]
@@ -262,12 +260,10 @@ class SeqToSeqRNNWithAttn(BaseSeqNet):
             tgt = beams[:, :, -1].reshape(batch_size * beam_width, 1)
 
             # hidden: [L, B*K, H]
-            flat_hn = dec_hn.reshape(dec_hn.size(0),
-                                     batch_size * beam_width, -1)
+            flat_hn = dec_hn.reshape(dec_hn.size(0), batch_size * beam_width, -1)
 
             if self._use_attn:
-                flat_enc = enc_outs.reshape(batch_size * beam_width,
-                                            enc_outs.size(2), -1)
+                flat_enc = enc_outs.reshape(batch_size * beam_width, enc_outs.size(2), -1)
                 logits, (new_hn, _) = self._decoder(tgt, flat_hn, flat_enc)
             else:
                 logits, (new_hn, _) = self._decoder(tgt, flat_hn)
@@ -292,22 +288,14 @@ class SeqToSeqRNNWithAttn(BaseSeqNet):
             # update beams
             new_beams = []
             for b in range(batch_size):
-                new_beams.append(
-                    cat([
-                        beams[b, beam_indices[b]],
-                        token_indices[b].unsqueeze(1)
-                    ], dim=1)
-                )
+                new_beams.append(cat([beams[b, beam_indices[b]], token_indices[b].unsqueeze(1)], dim=1))
 
             beams = stack(new_beams, dim=0)  # [B, K, T+1]
             scores = top_scores
 
             # update hidden
             new_hn = new_hn.view(new_hn.size(0), batch_size, beam_width, -1)
-            dec_hn = new_hn.gather(
-                2,
-                beam_indices.unsqueeze(0).unsqueeze(-1).expand_as(new_hn)
-            )
+            dec_hn = new_hn.gather(2, beam_indices.unsqueeze(0).unsqueeze(-1).expand_as(new_hn))
 
         # select best beam
         best = scores.argmax(dim=1)  # [B]

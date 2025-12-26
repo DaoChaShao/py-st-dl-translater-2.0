@@ -1,10 +1,18 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-25)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-26)
 
 ### Features
 
+- add attention-based Seq2Seq models for GRU, LSTM, and RNN ([751cdeb](https://github.com///commit/751cdeb2fd26e60b74792490a531227b624ab404))
+- add model-true-rnn-without-attn-beam-concat.pth ([1fb127e](https://github.com///commit/1fb127e7f51644d9f2a4d05fb1d00654597a37d9))
+- add model-true-rnn-with-attn-dot-beam-concat.pth ([ec7e9b2](https://github.com///commit/ec7e9b2d329a80e9251a6908883bec22508ba252))
+- add training log for true RNN model without attention and beam strategy ([6de40aa](https://github.com///commit/6de40aab1609fa61e656caf2e459b3c739711297))
+- add training log for true RNN model with attention and beam strategy ([16541fd](https://github.com///commit/16541fd1552008a6d3eb47f065b193c7f4c4c0d4))
+- add training log for true GRU model with attention and beam strategy ([175e546](https://github.com///commit/175e546852d98c4e7b33b349bb459b4ccd9f6cab))
+- integrate SeqToSeq LSTM model with attention and update training logs ([36c9487](https://github.com///commit/36c9487dd8d143505079eef9fef82cfc6bc35f6c))
+- enhance SeqToSeq LSTM with attention mechanism and improve parameter handling ([da97382](https://github.com///commit/da973824c14d6a9214934d07ff75b3c1d44f1097))
 - add model-true-gru-without-attn-beam-concat.pth ([51d9c4e](https://github.com///commit/51d9c4e52390867832356bf698582f9d5e7390f1))
 - add model-true-gru-with-attn-beam-concat-dot.pth ([8d29cb5](https://github.com///commit/8d29cb5ea168852fb746b64bfb2332e3708e9309))
 - update trainer to use SeqToSeqRNNWithAttn and enhance training logs for multiple models ([befa5c9](https://github.com///commit/befa5c9197e3205ab854b0c6d6cc06cadfbc1c9e))
@@ -187,6 +195,7 @@
 
 ### Bug Fixes
 
+- update net_category to RNN and clean up code formatting in seq2seq_attn_rnn.py ([eb5f14a](https://github.com///commit/eb5f14acaee84e81aaea6726c19bcad9254a3ad5))
 - correct training log format and update attention scoring methods in trainer4attn.py ([c075919](https://github.com///commit/c07591901ec56bca2d307a62ce765bc8d6756ceb))
 - update model initialization to use SeqToSeqGRU and correct log name for beam search strategy ([f3b177c](https://github.com///commit/f3b177c32018951798e996b259d1bf3b639d1a85))
 - adjust dropout rate based on number of RNN layers ([98dc789](https://github.com///commit/98dc7890196fe92654e6fb15cbcf539f31f220c9))
@@ -213,6 +222,7 @@
 
 ### Chore
 
+- update CHANGELOG to include recent bug fix and chore updates ([fae3004](https://github.com///commit/fae3004950faa64fe4e0b69d95c4a7e0f7be16a9))
 - update CHANGELOG for version 0.1.0 release ([12b48a6](https://github.com///commit/12b48a6856968d382663ad73b983a4d006091095))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))
 
@@ -226,6 +236,8 @@
 
 ### Code Refactoring
 
+- add and rename model-true-gru-with-attn-dot-beam-concat.pth ([1dbd829](https://github.com///commit/1dbd829dc1b11a7c96a3ef18464dfa96fde56c91))
+- streamline linear layer initialization and update parameter names in seq_decoder4attn.py ([556c807](https://github.com///commit/556c8078d911bb0ac1e05e13dd572f3067e60541))
 - simplify attention mechanism by removing redundant fusion layer in seq_decoder4attn.py ([a9dae71](https://github.com///commit/a9dae71e1ddd0dcb78e73abc78c6c5017bdf7e20))
 - remove redundant code for hidden state concatenation in seq_decoder.py ([f63ee67](https://github.com///commit/f63ee67271c064b61d470460aba50d1635383b09))
 - enhance docstring and adjust hidden size calculation in SeqToSeqGRUWithAttn class ([ec10789](https://github.com///commit/ec10789b833c434e008b482134939482a84a9319))

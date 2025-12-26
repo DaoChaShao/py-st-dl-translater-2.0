@@ -58,6 +58,9 @@ from .multi_task_gru import MultiTaskGRU
 from .multi_task_lstm import MultiTaskLSTM
 from .multi_task_rnn import MultiTaskRNN
 from .seq2seq import SeqToSeqCoder
+from .seq2seq_attn_gru import SeqToSeqGRUWithAttn
+from .seq2seq_attn_lstm import SeqToSeqLSTMWithAttn
+from .seq2seq_attn_rnn import SeqToSeqRNNWithAttn
 from .seq2seq_task_gru import SeqToSeqGRU
 from .seq2seq_task_lstm import SeqToSeqLSTM
 from .seq2seq_task_rnn import SeqToSeqRNN
@@ -80,7 +83,12 @@ __all__ = [
     "MultiTaskLSTM",
     "MultiTaskRNN",
 
+    "SeqToSeqGRUWithAttn",
+    "SeqToSeqLSTMWithAttn",
+    "SeqToSeqRNNWithAttn",
+
     "SeqToSeqCoder",
+
     "SeqToSeqGRU",
     "SeqToSeqLSTM",
     "SeqToSeqRNN",

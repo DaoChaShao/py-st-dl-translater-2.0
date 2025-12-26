@@ -73,10 +73,8 @@ class SeqDecoderWithAttn(nn.Module):
             dropout=self._dropout
         )
         self._drop = nn.Dropout(p=self._dropout)
-        if self._use_attn:
-            self._linear = nn.Linear(self._M, self._L)
-        else:
-            self._linear = nn.Linear(self._M, self._L)
+        # Output linear layer
+        self._linear = nn.Linear(self._M, self._L)
 
     def _init_attn(self):
         self._attn = self._select_attn(self._attn_type)(
@@ -108,10 +106,10 @@ class SeqDecoderWithAttn(nn.Module):
         return nets[net_category]
 
     @final
-    def forward(self, tgt: Tensor, dec_hn: Tensor, enc_outs: Tensor):
+    def forward(self, tgt: Tensor, hidden: Tensor | tuple[Tensor, Tensor], enc_outs: Tensor):
         """ Forward pass for the decoder with attention
         :param tgt: target sequences [batch_size, tgt_len]
-        :param dec_hn: initial hidden state for the decoder [num_layers, batch_size, hidden_size]
+        :param hidden: initial hidden state for the decoder [num_layers, batch_size, hidden_size]
         :param enc_outs: encoder outputs for attention [batch_size, src_len, hidden_size]
         :return:
         - logits: output logits [batch_size, tgt_len, vocab_size]
@@ -123,9 +121,9 @@ class SeqDecoderWithAttn(nn.Module):
         embeddings = self._embed(tgt)
 
         if self._type == "lstm":
-            outputs, (hn, cn) = self._net(embeddings, dec_hn)
+            outputs, (hn, cn) = self._net(embeddings, hidden)
         else:
-            outputs, hn = self._net(embeddings, dec_hn)
+            outputs, hn = self._net(embeddings, hidden)
             cn = zeros_like(hn, device=self._accelerator)
 
         if self._use_attn:
@@ -135,8 +133,7 @@ class SeqDecoderWithAttn(nn.Module):
             context: list[Tensor] = []
             for ts in range(tgt_len):
                 # Get hidden state at current time step - [B, H]
-                # curr_dec_hn: Tensor = outputs[:, ts, :]
-                curr_dec_hn: Tensor = hn[-1]
+                curr_dec_hn: Tensor = outputs[:, ts, :]
 
                 # Get the context score and vector - [B, M]
                 curr_context, _ = self._attn(curr_dec_hn, aligned_enc_outs)
@@ -162,15 +159,17 @@ class SeqDecoderWithAttn(nn.Module):
 
     # Decoder Preparation
     def init_decoder_entries(self,
-                             enc_hn: Tensor,
+                             hidden: Tensor | tuple[Tensor, Tensor],
                              merge_method: str | Literal["concat", "max", "mean", "sum"] = "mean"
                              ) -> Tensor:
         """ Initialize the decoder input from the encoder hidden state
-        :param enc_hn: encoder hidden state [num_layers * num_directions, batch_size, hidden_size]
+        :param hidden: encoder hidden state [num_layers * num_directions, batch_size, hidden_size]
         :param merge_method: method to combine bidirectional hidden states ('mean', 'max', 'sum', 'concat')
         :return: decoder initial hidden state [num_layers, batch_size, hidden_size] or
         """
-        num_layers_times_num_directions, batches, enc_hn_size = enc_hn.shape
+        enc_hn = hidden if isinstance(hidden, Tensor) else hidden[0]
+
+        num_layers_times_num_directions, batches, enc_hn_size = hidden.shape
         num_layers: int = num_layers_times_num_directions // self._num_directions
 
         # reshape encoder hidden to [num_layers, enc_num_directions, batch, hidden_size]

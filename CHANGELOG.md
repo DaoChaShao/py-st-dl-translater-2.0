@@ -1,10 +1,15 @@
 <!-- insertion marker -->
 <a name="0.1.0"></a>
 
-## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-26)
+## [0.1.0](https://github.com///compare/5b72e29abc5f5102a2f89d57f21a997d144151fb...0.1.0) (2025-12-27)
 
 ### Features
 
+- add model-true-lstm-without-attn-beam-concat.pth ([8e36d89](https://github.com///commit/8e36d898e3046467444fb4ce1c84c1997fa5b1de))
+- add model-true-lstm-with-attn-dot-beam-concat.pth ([b556e48](https://github.com///commit/b556e48c2b1f8e69ed37624ebf4577101d625727))
+- add training log for beam search strategy with LSTM without attention ([1d1e2b1](https://github.com///commit/1d1e2b14da0cda49c442be3cf6b036f64e592677))
+- add training log for beam search strategy with LSTM and attention ([aa90cb7](https://github.com///commit/aa90cb7c4e3901cf98cd531b36cdf1c618bcba11))
+- add support for Additive and Scaled Dot Product attention mechanisms ([63708bf](https://github.com///commit/63708bf2e27318c22159ea22d771ecbc72714538))
 - add attention-based Seq2Seq models for GRU, LSTM, and RNN ([751cdeb](https://github.com///commit/751cdeb2fd26e60b74792490a531227b624ab404))
 - add model-true-rnn-without-attn-beam-concat.pth ([1fb127e](https://github.com///commit/1fb127e7f51644d9f2a4d05fb1d00654597a37d9))
 - add model-true-rnn-with-attn-dot-beam-concat.pth ([ec7e9b2](https://github.com///commit/ec7e9b2d329a80e9251a6908883bec22508ba252))
@@ -195,6 +200,8 @@
 
 ### Bug Fixes
 
+- update model initialization to use SeqToSeqGRUWithAttn and change attention scorer to Bahdanau ([ae6ade2](https://github.com///commit/ae6ade2851b46aa5ed895bca33b6d433adebae41))
+- correct casing of Bahdanau in AttnScorer class ([f178a69](https://github.com///commit/f178a69551dd3fa7aa86b3215b8c01fdf42c82f8))
 - update net_category to RNN and clean up code formatting in seq2seq_attn_rnn.py ([eb5f14a](https://github.com///commit/eb5f14acaee84e81aaea6726c19bcad9254a3ad5))
 - correct training log format and update attention scoring methods in trainer4attn.py ([c075919](https://github.com///commit/c07591901ec56bca2d307a62ce765bc8d6756ceb))
 - update model initialization to use SeqToSeqGRU and correct log name for beam search strategy ([f3b177c](https://github.com///commit/f3b177c32018951798e996b259d1bf3b639d1a85))
@@ -222,6 +229,7 @@
 
 ### Chore
 
+- update CHANGELOG to reflect recent feature additions and bug fixes ([8169495](https://github.com///commit/8169495083f6ded157f8d03c81e2145a3db9a748))
 - update CHANGELOG to include recent bug fix and chore updates ([fae3004](https://github.com///commit/fae3004950faa64fe4e0b69d95c4a7e0f7be16a9))
 - update CHANGELOG for version 0.1.0 release ([12b48a6](https://github.com///commit/12b48a6856968d382663ad73b983a4d006091095))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))

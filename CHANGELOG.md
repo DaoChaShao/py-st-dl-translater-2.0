@@ -5,6 +5,16 @@
 
 ### Features
 
+- add model-true-gru-with-attn-sdot-beam-concat.pth ([2d2adcb](https://github.com///commit/2d2adcbb975f5ec63e84388003d3515d1e563544))
+- add model-true-gru-with-attn-bahdanau-beam-concat.pth ([cb8d5a7](https://github.com///commit/cb8d5a72a8ce4f2627183dcdc09a468786461c92))
+- add training log for beam search strategy with attention mechanism ([89024de](https://github.com///commit/89024de5112bed0b13d1d4b839e6a0279bf18442))
+- update trainer4attn.py to modify model configuration and attention scoring method ([e73af3a](https://github.com///commit/e73af3a0809cd3af69b78768f8845b3af55bf1de))
+- update predictor.py to integrate SeqToSeqGRUWithAttn model and enhance prediction evaluation ([d05b763](https://github.com///commit/d05b763e0770ebe12cbe86cd2320472abc8dcf0a))
+- update prediction.py to integrate SeqToSeqGRUWithAttn model and enhance prediction display ([6e53ed6](https://github.com///commit/6e53ed6f0a1a4c500bdc145a6c17c87f3b9b7f67))
+- enhance main.py to initialize config page and set pages for Streamlit application ([611000e](https://github.com///commit/611000e6ba73c55dad446a253c1f91804c422bd0))
+- update home.py to reflect support for multiple sequence models with attention mechanisms ([d877ce5](https://github.com///commit/d877ce50109e18ce14ee39b97d7a6237f4572a89))
+- update evaluator to support new GRU and LSTM models with and without attention ([79f0e65](https://github.com///commit/79f0e6552b5eb66b23edc89abc8046be8e92d515))
+- add new model paths for false and true GRU, LSTM, and RNN configurations ([1e15dcc](https://github.com///commit/1e15dcc7b7275ebcf2d724d956e6deb08d08880f))
 - add model-true-lstm-without-attn-beam-concat.pth ([8e36d89](https://github.com///commit/8e36d898e3046467444fb4ce1c84c1997fa5b1de))
 - add model-true-lstm-with-attn-dot-beam-concat.pth ([b556e48](https://github.com///commit/b556e48c2b1f8e69ed37624ebf4577101d625727))
 - add training log for beam search strategy with LSTM without attention ([1d1e2b1](https://github.com///commit/1d1e2b14da0cda49c442be3cf6b036f64e592677))
@@ -22,7 +32,6 @@
 - add model-true-gru-with-attn-beam-concat-dot.pth ([8d29cb5](https://github.com///commit/8d29cb5ea168852fb746b64bfb2332e3708e9309))
 - update trainer to use SeqToSeqRNNWithAttn and enhance training logs for multiple models ([befa5c9](https://github.com///commit/befa5c9197e3205ab854b0c6d6cc06cadfbc1c9e))
 - add training log for beam search strategy without attention mechanism ([4a6b968](https://github.com///commit/4a6b968abc8796a17b61749677620f2caf68387e))
-- add training log for beam search strategy with attention mechanism ([c07ac4d](https://github.com///commit/c07ac4d6287f2f82a15aa013e978bfbf65587b34))
 - implement SeqToSeqRNNWithAttn class with attention mechanism and update model parameters ([2c52108](https://github.com///commit/2c52108b81ec67b4ba5a42db7d0ee50a134aa59c))
 - add TorchTrainer4SeqToSeq class for seq2seq training with attention ([9fdf127](https://github.com///commit/9fdf127a6ae8fa711bf51b46debed96d84aefb19))
 - round training and validation loss to specified decimal places in logging ([934fb2a](https://github.com///commit/934fb2a9c8383a2a0bdbff2508cdc0f788520119))
@@ -229,7 +238,7 @@
 
 ### Chore
 
-- update CHANGELOG to reflect recent feature additions and bug fixes ([8169495](https://github.com///commit/8169495083f6ded157f8d03c81e2145a3db9a748))
+- update CHANGELOG to reflect recent feature additions and bug fixes ([35ab416](https://github.com///commit/35ab416d0ffb9b46ab545c1957dd6c971f0d4bcf))
 - update CHANGELOG to include recent bug fix and chore updates ([fae3004](https://github.com///commit/fae3004950faa64fe4e0b69d95c4a7e0f7be16a9))
 - update CHANGELOG for version 0.1.0 release ([12b48a6](https://github.com///commit/12b48a6856968d382663ad73b983a4d006091095))
 - add .gitignore to exclude Python-generated files and IDE configurations ([8aeb5ed](https://github.com///commit/8aeb5edc05707b2b75f5fb44af1635df5a652773))

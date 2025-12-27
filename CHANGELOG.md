@@ -5,6 +5,7 @@
 
 ### Features
 
+- add cmn.txt ([bf77eed](https://github.com///commit/bf77eed2d34d23aba8899aa7439f84e1626c0933))
 - add model-true-gru-with-attn-sdot-beam-concat.pth ([2d2adcb](https://github.com///commit/2d2adcbb975f5ec63e84388003d3515d1e563544))
 - add model-true-gru-with-attn-bahdanau-beam-concat.pth ([cb8d5a7](https://github.com///commit/cb8d5a72a8ce4f2627183dcdc09a468786461c92))
 - add training log for beam search strategy with attention mechanism ([89024de](https://github.com///commit/89024de5112bed0b13d1d4b839e6a0279bf18442))
@@ -238,6 +239,7 @@
 
 ### Chore
 
+- update CHANGELOG to include recent feature additions and enhancements ([7984973](https://github.com///commit/7984973ce803566f93ad43fab34d7cc0865c21e0))
 - update CHANGELOG to reflect recent feature additions and bug fixes ([35ab416](https://github.com///commit/35ab416d0ffb9b46ab545c1957dd6c971f0d4bcf))
 - update CHANGELOG to include recent bug fix and chore updates ([fae3004](https://github.com///commit/fae3004950faa64fe4e0b69d95c4a7e0f7be16a9))
 - update CHANGELOG for version 0.1.0 release ([12b48a6](https://github.com///commit/12b48a6856968d382663ad73b983a4d006091095))

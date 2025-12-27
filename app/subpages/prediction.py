@@ -15,8 +15,8 @@ from streamlit import (empty, sidebar, subheader, session_state,
 from torch import load, device, Tensor, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Languages, Tokens, SeqNets, SeqStrategies
-from src.nets.seq2seq import SeqToSeqCoder
+from src.configs.cfg_types import Languages, Tokens, SeqNets, SeqStrategies, SeqMergeMethods, AttnScorer
+from src.nets.seq2seq_attn_gru import SeqToSeqGRUWithAttn
 from src.utils.helper import Timer
 from src.utils.NLTK import bleu_score
 from src.utils.nlp import SpaCyBatchTokeniser, build_word2id_seqs
@@ -74,7 +74,7 @@ def map_bleu_to_benchmarks(bleu: float) -> list[tuple[str, str]]:
 display4bar: container = container(width="stretch")
 empty_messages: empty = empty()
 interpreter: empty = empty()
-left, mid, right = columns(3, gap="medium", vertical_alignment="center", width="stretch")
+original, prediction = columns(2, gap="medium", vertical_alignment="center", width="stretch")
 display4data_title: empty = empty()
 display4data = container(border=1, width="stretch")
 dict4en, dict4cn = columns(2, gap="medium", vertical_alignment="center", width="stretch")
@@ -93,8 +93,7 @@ with sidebar:
     subheader("Translater Settings")
 
     # Load model parameters
-    params4greedy: Path = Path(CONFIG4RNN.FILEPATHS.TRAINED_NET_GREEDY)
-    params4beam: Path = Path(CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM)
+    params4beam: Path = Path(CONFIG4RNN.FILEPATHS.NET_TRUE_GRU_WITH_ATTN_BAHDANAU_BEAM_CONCAT)
     # Load dictionary
     dic_cn: Path = Path(CONFIG4RNN.FILEPATHS.DICTIONARY_CN)
     dictionary_cn: dict[str, int] = load_json(dic_cn) if dic_cn.exists() else print("Dictionary file not found.")
@@ -102,7 +101,7 @@ with sidebar:
     dictionary_en: dict[str, int] = load_json(dic_en) if dic_en.exists() else print("Dictionary file not found.")
     reversed_dict: dict[int, str] = {idx: word for word, idx in dictionary_en.items()}
     # print(reversed_dict)
-    if params4greedy.exists() and params4beam.exists() and dic_cn.exists() and dic_en.exists():
+    if params4beam.exists() and dic_cn.exists() and dic_en.exists():
         empty_messages.warning("The model & dictionary file already exists. You can initialise model first.")
 
         if session_state["model"] is None:
@@ -110,13 +109,15 @@ with sidebar:
             model: str = selectbox(
                 "Select a Model",
                 options=[SeqNets.RNN, SeqNets.LSTM, SeqNets.GRU], index=2,
-                disabled=True, width="stretch"
+                disabled=True,
+                width="stretch"
             )
             caption(f"You selected **{model}** for translation.")
             # Set strategy selection
             selection: str = selectbox(
                 "Select a Strategy to translate",
-                options=[SeqStrategies.GREEDY, SeqStrategies.BEAM_SEARCH], index=0,
+                options=[SeqStrategies.GREEDY, SeqStrategies.BEAM_SEARCH], index=1,
+                disabled=True,
                 width="stretch"
             )
             caption(f"You selected **{selection} search** strategy for translation.")
@@ -124,24 +125,25 @@ with sidebar:
             if button("Initialise Model & Dictionary & Data", type="primary", width="stretch"):
                 with Timer("Initialisation") as session_state["timer4init"]:
                     # Initialise a model and load saved parameters
-                    session_state["model"] = SeqToSeqCoder(
-                        len(dictionary_cn),
-                        len(dictionary_en),
+                    session_state["model"] = SeqToSeqGRUWithAttn(
+                        vocab_size_src=len(dictionary_cn),
+                        vocab_size_tgt=len(dictionary_en),
                         embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
                         hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
                         num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
                         dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-                        bid=True,
-                        pad_idx4input=dictionary_cn[Tokens.PAD],
-                        pad_idx4output=dictionary_en[Tokens.PAD],
-                        net_category=SeqNets.GRU,
+                        bidirectional=True,
+                        accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
+                        PAD_SRC=dictionary_cn[Tokens.PAD],
+                        PAD_TGT=dictionary_en[Tokens.PAD],
                         SOS=dictionary_cn[Tokens.SOS],
-                        EOS=dictionary_en[Tokens.EOS],
+                        EOS=dictionary_cn[Tokens.EOS],
+                        merge_method=SeqMergeMethods.CONCAT,
+                        teacher_forcing_ratio=0.5,
+                        use_attention=True,
+                        attn_scorer=AttnScorer.BAHDANAU
                     )
-                    dict_state: dict = load(
-                        params4greedy if selection == SeqStrategies.GREEDY else params4beam,
-                        map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR)
-                    )
+                    dict_state: dict = load(params4beam, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
                     session_state["model"].load_state_dict(dict_state)
                     session_state["model"].eval()
                     print("Model Loaded Successfully!")
@@ -230,8 +232,8 @@ with sidebar:
                     f"You selected a data for prediction. {session_state['timer4pick']} You can repick if needed."
                 )
 
-                display4data_title.markdown(f"**The data you selected**")
-                with display4data:
+                with original:
+                    markdown(f"**The data you selected**")
                     write(session_state["idx"])
                     write(session_state["cn4prove"][session_state["idx"]])
                     write(session_state["reference"])
@@ -257,9 +259,12 @@ with sidebar:
 
                     # Calculate BLEU Score
                     bleu = bleu_score(session_state["reference"], session_state["hypothesis"])
-                    with display4data:
+                    with prediction:
+                        markdown(f"**The Prediction Result**")
                         write(session_state["hypothesis"])
                         write(bleu)
+                    display4data_title.markdown(f"**The rating of the prediction**")
+                    with display4data:
                         for domain, quality in map_bleu_to_benchmarks(bleu):
                             write(f"Domain: {domain}, Quality: {quality}")
 

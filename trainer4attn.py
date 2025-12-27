@@ -45,8 +45,8 @@ def main() -> None:
         train, valid = prepare_data()
 
         # Initialize model
-        # model = SeqToSeqGRUWithAttn(
-        model = SeqToSeqLSTMWithAttn(
+        model = SeqToSeqGRUWithAttn(
+        # model = SeqToSeqLSTMWithAttn(
         # model = SeqToSeqRNNWithAttn(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
@@ -63,7 +63,7 @@ def main() -> None:
             merge_method=SeqMergeMethods.CONCAT,
             teacher_forcing_ratio=0.5,
             use_attention=True,
-            attn_scorer=AttnScorer.DOT_PRODUCT
+            attn_scorer=AttnScorer.BAHDANAU
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -153,7 +153,7 @@ def main() -> None:
             valid_loader=valid,
             epochs=args.epochs,
             model_save_path=str(CONFIG4RNN.FILEPATHS.SAVED_NET),
-            log_name=f"{SeqNets.RNN}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
+            log_name=f"{SeqNets.GRU}-{SeqStrategies.BEAM_SEARCH}-{SeqMergeMethods.CONCAT}",
         )
         """
         ****************************************************************
@@ -172,8 +172,8 @@ def main() -> None:
         ****************************************************************
         Training Log for SeqToSeqLSTM with attention and without attention
         ----------------------------------------------------------------
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "dot"
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": false
+        "bid": true, "epoch": 63/100, "strategy": "beam", "merge": "concat", "bleu": 0.1782, "rouge": 0.5722, "attn": true, "score": "dot"
+        "bid": true, "epoch": 64/100, "strategy": "beam", "merge": "concat", "bleu": 0.1442, "rouge": 0.5235, "attn": false
         ****************************************************************
         ****************************************************************
         Training Log for SeqToSeqRNN with attention and without attention

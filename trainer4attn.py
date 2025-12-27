@@ -46,15 +46,15 @@ def main() -> None:
 
         # Initialize model
         model = SeqToSeqGRUWithAttn(
-        # model = SeqToSeqLSTMWithAttn(
-        # model = SeqToSeqRNNWithAttn(
+            # model = SeqToSeqLSTMWithAttn(
+            # model = SeqToSeqRNNWithAttn(
             vocab_size_src=vocab_size4cn,
             vocab_size_tgt=vocab_size4en,
             embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
             hidden_size=CONFIG4RNN.PARAMETERS.HIDDEN_SIZE,
             num_layers=CONFIG4RNN.PARAMETERS.LAYERS,
             dropout_rate=CONFIG4RNN.PREPROCESSOR.DROPOUT_RATIO,
-            bidirectional=True,
+            bidirectional=False,
             accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR,
             PAD_SRC=dictionary_cn[Tokens.PAD],
             PAD_TGT=dictionary_en[Tokens.PAD],
@@ -63,7 +63,7 @@ def main() -> None:
             merge_method=SeqMergeMethods.CONCAT,
             teacher_forcing_ratio=0.5,
             use_attention=True,
-            attn_scorer=AttnScorer.BAHDANAU
+            attn_scorer=AttnScorer.SCALED_DOT_PRODUCT
         )
         # Setup optimizer and loss function
         optimizer = optim.AdamW(model.parameters(), lr=args.alpha, weight_decay=CONFIG4RNN.HYPERPARAMETERS.DECAY)
@@ -159,9 +159,9 @@ def main() -> None:
         ****************************************************************
         Training Log for SeqToSeqGRU with attentions
         ----------------------------------------------------------------
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "bahdanau"
+        "bid": true, "epoch": 51/100, "strategy": "beam", "merge": "concat", "bleu": 0.2368, "rouge": 0.6262, "attn": true, "score": "bahdanau"
         "bid": true, "epoch": 57/100, "strategy": "beam", "merge": "concat", "bleu": 0.1840, "rouge": 0.5721, "attn": true, "score": "dot"
-        "bid": true, "epoch": /100, "strategy": "beam", "merge": "concat", "bleu": , "rouge": , "attn": true, "score": "scaled_dot"
+        "bid": true, "epoch": 49/100, "strategy": "beam", "merge": "concat", "bleu": 0.2291, "rouge": 0.6174, "attn": true, "score": "scaled_dot"
         ****************************************************************
         ****************************************************************
         Training Log for SeqToSeqGRU with attention and without attention

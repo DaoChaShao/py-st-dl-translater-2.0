@@ -9,11 +9,11 @@
 from functools import cache
 from pathlib import Path
 from random import randint
-from torch import Tensor, load, device, no_grad
+from torch import Tensor, no_grad
 
 from src.configs.cfg_rnn import CONFIG4RNN
-from src.configs.cfg_types import Languages, Tokens, SeqMergeMethods, SeqStrategies
-from src.nets.seq2seq_task_gru import SeqToSeqGRU
+from src.configs.cfg_types import Languages, Tokens, SeqMergeMethods, SeqStrategies, AttnScorer
+from src.nets.seq2seq_attn_gru import SeqToSeqGRUWithAttn
 from src.utils.helper import Timer
 from src.utils.highlighter import starts, lines, red, green, blue
 from src.utils.NLTK import bleu_score
@@ -91,12 +91,12 @@ def main() -> None:
         """
 
         # Load the save model parameters
-        params: Path = Path(CONFIG4RNN.FILEPATHS.TRAINED_NET_BEAM)
+        params: Path = Path(CONFIG4RNN.FILEPATHS.NET_TRUE_GRU_WITH_ATTN_BAHDANAU_BEAM_CONCAT)
         if params.exists():
             print(f"Model {green(params.name)} Exists!")
 
             # Set up a model and load saved parameters
-            model = SeqToSeqGRU(
+            model = SeqToSeqGRUWithAttn(
                 vocab_size_src=len(dictionary_cn),
                 vocab_size_tgt=len(dictionary_en),
                 embedding_dim=CONFIG4RNN.PARAMETERS.EMBEDDING_DIM,
@@ -109,10 +109,11 @@ def main() -> None:
                 PAD_TGT=dictionary_en[Tokens.PAD],
                 SOS=dictionary_cn[Tokens.SOS],
                 EOS=dictionary_cn[Tokens.EOS],
-                merge_method=SeqMergeMethods.CONCATENATE,
+                merge_method=SeqMergeMethods.CONCAT,
+                teacher_forcing_ratio=0.5,
+                use_attention=True,
+                attn_scorer=AttnScorer.BAHDANAU
             )
-            # dict_state: dict = load(params, map_location=device(CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR))
-            # model.load_state_dict(dict_state)
             model.load_model(params, strict=True)
             model.eval()
             print("Model Loaded Successfully!")
@@ -124,8 +125,11 @@ def main() -> None:
             # Randomly select a data point for prediction
             assert len(sequences) == len(en_items), "src and truth tgt length mismatch."
             idx: int = randint(0, len(sequences) - 1)
+            # ----------------------------------------------------------------
             seq: list[int] = sequences[idx]
             # seq: list[int] = sequences[2102]
+            # seq: list[int] = sequences[3280]
+            # ----------------------------------------------------------------
             # Convert the token to a tensor
             src: Tensor = item2tensor(seq, embedding=True, accelerator=CONFIG4RNN.HYPERPARAMETERS.ACCELERATOR)
             # Add batch size
@@ -134,27 +138,30 @@ def main() -> None:
 
             # Prediction
             with no_grad():
-                strategy: str = (
-                    SeqStrategies.GREEDY
-                    if params.name.split(".")[0].split("-")[2] in str(CONFIG4RNN.FILEPATHS.TRAINED_NET_GREEDY)
-                    else SeqStrategies.BEAM_SEARCH
-                )
+                strategy: str = params.name.split("-")[6]
 
                 out: Tensor = model.generate(src)
                 pred = [reversed_dict.get(idx, Tokens.UNK) for idx in out.squeeze().tolist()]
                 hypothesis: list[str] = [word.strip() for word in pred if word != Tokens.EOS]
                 # Get the relevant reference
+                # ----------------------------------------------------------------
                 reference: list[str] = en_items[idx]
                 # reference: list[str] = en_items[2102]
+                # reference: list[str] = en_items[3280]
+                # ----------------------------------------------------------------
 
                 bleu = bleu_score(reference, hypothesis)
                 starts()
                 print(f"Evaluation Results for {strategy} Model:")
                 lines()
+                # ----------------------------------------------------------------
                 print(f"Selected Data Index for Prediction: {red(str(idx))}")
                 print(f"Input Sentence (CN):                {cn4prove[idx]}")
                 # print(f"Selected Data Index for Prediction: {red(str(2102))}")
                 # print(f"Input Sentence (CN):                {cn4prove[2102]}")
+                # print(f"Selected Data Index for Prediction: {red(str(3280))}")
+                # print(f"Input Sentence (CN):                {cn4prove[3280]}")
+                # ----------------------------------------------------------------
                 print(f"Reference (EN):                     {reference}")
                 print(f"Predation (EN):                     {hypothesis}")
                 print(f"BLEU Score:                         {blue(f"{bleu:.4f}")}")
@@ -170,13 +177,22 @@ def main() -> None:
                 BLEU Score:                         0.5946
                 ****************************************************************
                 ****************************************************************
-                Evaluation Results for beam Model:
+                Evaluation Results for beam Model without attention:
                 ----------------------------------------------------------------
                 Selected Data Index for Prediction: 3280
                 Input Sentence (CN):                你裁切纸张了吗？
                 Reference (EN):                     ['do', 'you', 'cut', 'the', 'paper', '?']
                 Predation (EN):                     ['do', 'you', 'have', 'any', '<UNK>', 'on', 'your', 'shoe', '?']
                 BLEU Score:                         0.0700
+                ****************************************************************
+                ****************************************************************
+                Evaluation Results for beam Model with bahdanau attention:
+                ----------------------------------------------------------------
+                Selected Data Index for Prediction: 3280
+                Input Sentence (CN):                你裁切纸张了吗？
+                Reference (EN):                     ['do', 'you', 'cut', 'the', 'paper', '?']
+                Predation (EN):                     ['be', 'you', '<UNK>', 'on', 'the', '?']
+                BLEU Score:                         0.0495
                 ****************************************************************
                 """
         else:

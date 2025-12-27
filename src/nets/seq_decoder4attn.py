@@ -13,7 +13,7 @@ from torch import (Tensor, nn, device, zeros_like,
 from typing import final, Literal, Final
 
 from src.configs.cfg_types import SeqNets
-from src.nets.attentions import DotProductAttention
+from src.nets.attentions import AdditiveAttention, DotProductAttention, ScaledDotProductAttention
 from src.nets.seq_encoder import SeqEncoder
 
 
@@ -84,7 +84,9 @@ class SeqDecoderWithAttn(nn.Module):
     @staticmethod
     def _select_attn(attn_category: str) -> type:
         attentions: dict[str, type] = {
+            "bahdanau": AdditiveAttention,
             "dot": DotProductAttention,
+            "sdot": ScaledDotProductAttention
         }
 
         if attn_category not in attentions:

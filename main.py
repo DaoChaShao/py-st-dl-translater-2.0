@@ -6,9 +6,13 @@
 # @File     :   main.py
 # @Desc     :   
 
+from app.tools.layout import config_page, set_pages
+
+
 def main() -> None:
-    """ Main Function """
-    pass
+    """ streamlit run main.py """
+    config_page()
+    set_pages()
 
 
 if __name__ == "__main__":
